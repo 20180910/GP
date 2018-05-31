@@ -8,7 +8,6 @@ import com.github.baseclass.view.Loading;
 import com.github.retrofitutil.NoNetworkException;
 import com.library.base.ProgressLayout;
 import com.library.base.ServerException;
-import com.sk.maiqian.network.response.HuZhaoObj;
 
 import java.net.ConnectException;
 
@@ -21,7 +20,7 @@ import retrofit2.Response;
  * Created by Administrator on 2017/5/18.
  */
 
-public abstract class HuZhaoCallBack implements Callback<HuZhaoObj> {
+public abstract class HuZhaoCallBack implements Callback<Object> {
 
     private Context context;
     private boolean noHiddenLoad;
@@ -63,7 +62,7 @@ public abstract class HuZhaoCallBack implements Callback<HuZhaoObj> {
         this.noHiddenLoad = noHiddenLoad;
     }
 
-    public abstract void onSuccess(HuZhaoObj obj);
+    public abstract void onSuccess(Object obj);
 
     public void onError(Throwable e, boolean showContentView) {
         if(pfl!=null){
@@ -107,7 +106,7 @@ public abstract class HuZhaoCallBack implements Callback<HuZhaoObj> {
     }
 
     @Override
-    public void onFailure(Call<HuZhaoObj> call, Throwable t) {
+    public void onFailure(Call<Object> call, Throwable t) {
         if (t instanceof ConnectException) {
             onError(new ServerException("服务器开小差去了,请稍后再试"));
         } else {
@@ -117,14 +116,14 @@ public abstract class HuZhaoCallBack implements Callback<HuZhaoObj> {
     }
 
     @Override
-    public void onResponse(Call<HuZhaoObj> call, Response<HuZhaoObj> response) {
-        HuZhaoObj resBody = response.body();
+    public void onResponse(Call<Object> call, Response<Object> response) {
+        Object resBody = response.body();
         if (resBody == null) {
             onError(new ServerException("处理失败"));
             onCompelte();
             return;
         }
-        if (resBody.isSuccess()) {
+        if (resBody!=null) {
             onSuccess(resBody);
         }else{
             onError(new ServerException(1,"处理失败"));

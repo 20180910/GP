@@ -1,22 +1,11 @@
 package com.gp.base;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.text.TextUtils;
-import android.widget.ImageView;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.BitmapEncoder;
-import com.sk.maiqian.R;
-
 /**
  * Created by Administrator on 2018/3/21.
  */
 
 public class GlideUtils {
-    public static void intoSimple(Context mContext, String url, ImageView imageView){
+   /* public static void intoSimple(Context mContext, String url, ImageView imageView){
         if(isGifUrl(url)){
             Glide.with(mContext).load(url).into(imageView);
         }else{
@@ -55,5 +44,5 @@ public class GlideUtils {
         }
         index+=4;
         return (index==url.length());
-    }
+    }*/
 }
