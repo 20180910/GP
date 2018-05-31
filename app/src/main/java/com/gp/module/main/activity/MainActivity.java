@@ -13,6 +13,10 @@ import com.gp.base.BaseActivity;
 import com.gp.module.main.fragment.HomeFragment;
 import com.gp.module.main.fragment.MyFragment;
 import com.gp.module.main.fragment.OrderTypeFragment;
+import com.gp.tools.StreamUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 
@@ -47,9 +51,66 @@ public class MainActivity extends BaseActivity {
         addFragment(R.id.fl_content, homeFragment);
 
         setTabClickListener();
+//        sz();
+        sh();
 
     }
+    private void sz() {
+        String code = StreamUtils.get(this, R.raw.sz);
+        Log("==code="+code.indexOf(""));
+        String sz = code.substring(code.indexOf("sz"), code.indexOf(".html"));
+        Log("==code=="+sz);
+        Log("==code==="+subString(code,"sz",".html"));
+        List<String> list=new ArrayList<>();
+        while (code.lastIndexOf(".html")-code.lastIndexOf("sz")>2){
+            String string = subString(code, "sz", ".html");
+            list.add(string);
+            code=code.replace(string,"").replace(" ","").replace("sz.html","");
+            Log("#==="+string);
+        }
+        Log("#==size="+list.size());
+        Log("#==="+list.get(0));
+        Log("#==="+list.get(list.size()-1));
+    }
+    private void sh() {
+        String code = StreamUtils.get(this, R.raw.sh);
+        Log("==code="+code.indexOf(""));
+        String sh = code.substring(code.indexOf("sh"), code.indexOf(".html"));
+        Log("==code=="+sh);
+        Log("==code==="+subString(code,"sh",".html"));
+        List<String> list=new ArrayList<>();
+        while (code.lastIndexOf(".html")-code.lastIndexOf("sh")>2){
+            String string = subString(code, "sh", ".html");
+            list.add(string);
+            code=code.replace(string,"").replace(" ","").replace("sh.html","");
+            Log("#==="+string);
+        }
+        Log("#==size="+list.size());
+        Log("#==="+list.get(0));
+        Log("#==="+list.get(list.size()-1));
+    }
+    public static String subString(String str, String strStart, String strEnd) {
 
+        /* 找出指定的2个字符在 该字符串里面的 位置 */
+        int strStartIndex = str.indexOf(strStart);
+        int strEndIndex = str.indexOf(strEnd);
+
+        /* index 为负数 即表示该字符串中 没有该字符 */
+        if (strStartIndex < 0) {
+            return "字符串 :---->" + str + "<---- 中不存在 " + strStart + ", 无法截取目标字符串";
+        }
+        if (strEndIndex < 0) {
+            return "字符串 :---->" + str + "<---- 中不存在 " + strEnd + ", 无法截取目标字符串";
+        }
+        /* 开始截取 */
+        String result = str.substring(strStartIndex+2, strEndIndex);
+        return result;
+    }
+    public String splitData(String str, String strStart, String strEnd) {
+        String tempStr;
+        tempStr = str.substring(str.indexOf(strStart) + 1, str.lastIndexOf(strEnd));
+        return tempStr;
+    }
 
 
     private void setTabClickListener() {

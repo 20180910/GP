@@ -14,4 +14,12 @@ public class ExampleUnitTest {
     public void addition_isCorrect() throws Exception {
         assertEquals(4, 2 + 2);
     }
+    @Test
+    public void asfd() throws Exception {
+        String a="a123b";
+        String substring = a.substring(a.indexOf("a")+1, a.indexOf("b"));
+        System.out.println(substring);
+        System.out.println(a.indexOf("a"));
+        System.out.println(a.indexOf("b"));
+    }
 }
