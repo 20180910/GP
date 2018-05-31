@@ -1,4 +1,4 @@
-package com.gp.module.main.act;
+package com.gp.module.main.activity;
 
 import android.view.View;
 

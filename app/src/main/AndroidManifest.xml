@@ -11,7 +11,7 @@
         android:name="com.gp.MyApplication"
         android:resizeableActivity="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name="com.gp.module.main.act.MainActivity">
+        <activity android:name="com.gp.module.main.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
