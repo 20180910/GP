@@ -52,7 +52,7 @@ public class MainActivity extends BaseActivity {
 
         setTabClickListener();
 //        sz();
-        sh();
+//        sh();
 
     }
     private void sz() {
@@ -89,8 +89,8 @@ public class MainActivity extends BaseActivity {
         Log("#==="+list.get(0));
         Log("#==="+list.get(list.size()-1));
     }
-    public static String subString(String str, String strStart, String strEnd) {
 
+    public static String subString(String str, String strStart, String strEnd) {
         /* 找出指定的2个字符在 该字符串里面的 位置 */
         int strStartIndex = str.indexOf(strStart);
         int strEndIndex = str.indexOf(strEnd);

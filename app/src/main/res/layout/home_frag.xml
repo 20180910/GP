@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/background_f2"
+    >
+    <com.library.base.ProgressLayout
+        android:id="@id/pl_load"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <in.srain.cube.views.ptr.PtrClassicFrameLayout
+            android:id="@id/pcfl_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:ptr_resistance="2.1"
+            app:ptr_ratio_of_header_height_to_refresh="1.2"
+            >
+            <com.library.base.view.MyRecyclerView
+                android:id="@+id/rv_all_gp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+            </com.library.base.view.MyRecyclerView>
+        </in.srain.cube.views.ptr.PtrClassicFrameLayout>
+    </com.library.base.ProgressLayout>
+</LinearLayout>
