@@ -20,7 +20,7 @@ import retrofit2.Response;
  * Created by Administrator on 2017/5/18.
  */
 
-public abstract class HuZhaoCallBack implements Callback<Object> {
+public abstract class HuZhaoCallBack<T> implements Callback<T> {
 
     private Context context;
     private boolean noHiddenLoad;
@@ -62,7 +62,7 @@ public abstract class HuZhaoCallBack implements Callback<Object> {
         this.noHiddenLoad = noHiddenLoad;
     }
 
-    public abstract void onSuccess(Object obj);
+    public abstract void onSuccess(T obj);
 
     public void onError(Throwable e, boolean showContentView) {
         if(pfl!=null){
@@ -106,7 +106,7 @@ public abstract class HuZhaoCallBack implements Callback<Object> {
     }
 
     @Override
-    public void onFailure(Call<Object> call, Throwable t) {
+    public void onFailure(Call<T> call, Throwable t) {
         if (t instanceof ConnectException) {
             onError(new ServerException("服务器开小差去了,请稍后再试"));
         } else {
@@ -116,19 +116,19 @@ public abstract class HuZhaoCallBack implements Callback<Object> {
     }
 
     @Override
-    public void onResponse(Call<Object> call, Response<Object> response) {
-        Object resBody = response.body();
-        if (resBody == null) {
+    public void onResponse(Call<T> call, Response<T> response) {
+        T body = response.body();
+        if (body == null) {
             onError(new ServerException("处理失败"));
             onCompelte();
             return;
         }
-        if (resBody!=null) {
-            onSuccess(resBody);
+        if (body!=null) {
+            onSuccess(body);
         }else{
             onError(new ServerException(1,"处理失败"));
         }
         onCompelte();
-        resBody = null;
+        body = null;
     }
 }

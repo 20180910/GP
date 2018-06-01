@@ -41,4 +41,7 @@ dependencies {
 
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+
+    compile 'com.github:RxBus:1.0.5'
+//    compile 'com.github:fastshape:1.0.1'
 }

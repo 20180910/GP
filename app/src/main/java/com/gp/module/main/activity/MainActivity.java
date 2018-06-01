@@ -49,11 +49,9 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         homeFragment = new HomeFragment();
         addFragment(R.id.fl_content, homeFragment);
-
         setTabClickListener();
 //        sz();
 //        sh();
-
     }
     private void sz() {
         String code = StreamUtils.get(this, R.raw.sz);

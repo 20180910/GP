@@ -5,7 +5,7 @@ package com.gp;
  */
 
 public class Constant {
-
+    public static final int pageSize=30;
     public static final String title="title";
     public static final String url="url";
     public static final String registrationId="registrationId";
@@ -26,7 +26,6 @@ public class Constant {
         public static final int addHomeworkSuccess=1001;
     }
     public static final String rootFileName="amynote";
-    public static final int pageSize=30;
     public static class IParam{
         public static final String isFirstIntoApp="isFirstIntoApp";
         public static final String isUpdatePwd="isUpdatePwd";

@@ -5,7 +5,6 @@ package com.gp;
  */
 
 public class Config {
-
     public static final String appcode = "7917593e9a974c98bba637a88fd2244b";
     public static final String longitude = "longitude";
     public static final String latitude = "latitude";
