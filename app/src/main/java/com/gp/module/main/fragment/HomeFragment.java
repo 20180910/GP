@@ -1,6 +1,7 @@
 package com.gp.module.main.fragment;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.gp.R;
@@ -107,26 +108,64 @@ public class HomeFragment extends BaseFragment<HomeImp> {
 
     }
     public void setName(){
-        ApiRequest.getSHData("600011", new HuZhaoCallBack<String>(mContext) {
+      /*  ApiRequest.getSHData("600011", new HuZhaoCallBack<String>(mContext) {
             @Override
             public void onSuccess(String obj) {
                 Log("=api=="+obj);
                 GpBean bean = BaseGP.formatStr(obj);
+                long l = mDaoImp.updateGpBean(bean);
+                Log.i(TAG+"===","==="+l);
             }
         });
-
-        /*RXStart(new IOCallBack<String>() {
-            @Override
-            public void call(FlowableEmitter<String> emitter) {
-                List<GpBean> gpBeen = mDaoImp.selectGpBean(1, true);
-                Log("===size"+gpBeen.size());
-            }
-            @Override
-            public void onMyNext(String obj) {
-
-            }
-        });*/
+*/
+//        addGPData();
+        selectData();
     }
+
+    private void updateData(String code) {
+        ApiRequest.getSHData(code, new HuZhaoCallBack<String>(mContext) {
+            @Override
+            public void onSuccess(String obj) {
+                GpBean bean = BaseGP.formatStr(obj);
+                long l = mDaoImp.updateGpBean(bean);
+            }
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                Log.i(TAG+"##===onError","===");
+            }
+        });
+    }
+
+    private void selectData() {
+        RXStart(new IOCallBack<String>() {
+            @Override
+            public void call(final FlowableEmitter<String> emitter) {
+                List<GpBean> list = mDaoImp.selectGpBean(1, true);
+                Log("===size"+list.size());
+                final int count=list.size();
+                for (int i = 0; i < count; i++) {
+                    String obj = ApiRequest.getDataTongBu(list.get(i).code, list.get(i).type);
+                    if(obj!=null&&obj.indexOf("v_pv_none_match")==-1){
+                        GpBean bean = BaseGP.formatStr(obj);
+                        long l = mDaoImp.updateGpBean(bean);
+                    }
+                    emitter.onNext(i+"/"+count);
+                }
+                emitter.onComplete();
+            }
+            @Override
+            public void onMyNext(String msg) {
+                showMsg(msg);
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                Log.i(TAG+"===","##===onMyError");
+            }
+        });
+    }
+
     public void addGPData(){
         RXStart(pl_load,new IOCallBack<GpProgressObj>() {
             @Override

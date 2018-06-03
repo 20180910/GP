@@ -95,7 +95,8 @@ public class HomeImp extends BaseDaoImp {
                         DBConstant.gpstr,
                         DBConstant.name,
                         DBConstant.code,
-                        DBConstant.type}, searchSql!=null?searchSql.toString():null,searchSql!=null?searchStr:null, null, null, orderBy,selectAll?null:limit);
+                        DBConstant.type
+                        }, searchSql!=null?searchSql.toString():null,searchSql!=null?searchStr:null, null, null, orderBy,selectAll?null:limit);
         List<GpBean> list = new ArrayList<GpBean>();
         GpBean bean;
         while (query.moveToNext()) {
@@ -111,17 +112,33 @@ public class HomeImp extends BaseDaoImp {
 
 //            long updateTime = string2Date(query.getString(query.getColumnIndex(DBConstant.updateTime)));
 //            long creatTime = string2Date(query.getString(query.getColumnIndex(DBConstant.createTime)));
-            bean.set_id(id);
-            bean.setUid(uid);
-            bean.setCreate_time(create_time);
-            bean.setUpdate_time(update_time);
-            bean.setGpstr(gpstr);
-            bean.setName(name);
-            bean.setCode(code);
-            bean.setType(type);
+            bean._id=id;
+            bean.uid=uid;
+            bean.create_time=create_time;
+            bean.update_time=update_time;
+            bean.gpstr=gpstr;
+            bean.name=name;
+            bean.code=code;
+            bean.type=type;
+
             list.add(bean);
         }
         db.close();
         return list;
+    }
+    public long updateGpBean(GpBean bean) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+//        values.put(DBConstant._id,  bean._id) ;
+//        values.put(DBConstant.uid,  bean.uid) ;
+//        values.put(DBConstant.create_time,  bean.create_time );
+//        values.put(DBConstant.update_time,  bean.update_time );
+        values.put(DBConstant.gpstr,  bean.gpstr );
+        values.put(DBConstant.name,  bean.name );
+//        values.put(DBConstant.code,  bean.code);
+//        values.put(DBConstant.type,  bean.type);
+        long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{bean.code + ""});
+        db.close();
+        return insert;
     }
 }

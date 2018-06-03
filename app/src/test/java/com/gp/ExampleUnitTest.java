@@ -30,6 +30,14 @@ public class ExampleUnitTest {
             System.out.println(i+"=="+split[i]);
         }
     }
+    @Test
+    public void asdf() throws Exception {
+        String a="v_sz002720=51~宏良股份~002720~0.00~0.00~0.00~0~0~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~~20180601150133~0.00~0.00~0.00~0.00~0.00/0/0~0~0~~0.00~U~0.00~0.00~0.00~~~0.00~0.00~0.00~0.00~0~0.00~~";
+        String[] split = a.split("~");
+        for (int i = 0; i < split.length; i++) {
+            System.out.println(i+"=="+split[i]);
+        }
+    }
 
 
 }

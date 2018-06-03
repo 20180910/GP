@@ -1,6 +1,8 @@
 package com.gp.module.main.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
@@ -8,11 +10,13 @@ import android.widget.FrameLayout;
 
 import com.github.androidtools.inter.MyOnClickListener;
 import com.github.customview.MyRadioButton;
+import com.gp.Constant;
 import com.gp.R;
 import com.gp.base.BaseActivity;
 import com.gp.module.main.fragment.HomeFragment;
 import com.gp.module.main.fragment.MyFragment;
 import com.gp.module.main.fragment.OrderTypeFragment;
+import com.gp.tools.CopyFile;
 import com.gp.tools.StreamUtils;
 
 import java.util.ArrayList;
@@ -135,8 +139,17 @@ public class MainActivity extends BaseActivity {
                         break;
                     case 3:
                             selectMy();
+                            copeFile();
                         break;
                 }
+            }
+            private void copeFile() {
+                String pathDatabase=mContext.getDatabasePath("MyGP").getPath();
+                System.out.println("path="+pathDatabase);
+                String newPath= Environment.getExternalStorageDirectory().getAbsolutePath() + "/"+ Constant.rootFileName+"/" + "MyGP"+System.currentTimeMillis();
+
+                int copy = CopyFile.copySdcardFile(pathDatabase, newPath);
+                System.out.println("path=="+copy);
             }
         };
     }
