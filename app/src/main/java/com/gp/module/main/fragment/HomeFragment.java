@@ -44,9 +44,13 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                 tv_price.setText(bean.now_price+"");
 
                 TextView tv_wainei_pan = holder.getTextView(R.id.tv_wainei_pan);
-                double waiNeiPan = AndroidUtils.chuFa(Double.parseDouble(bean.wai_num), Double.parseDouble(bean.nei_num), 5);
+                double waiNeiPan;
+                if(Double.parseDouble(bean.nei_num)==0){
+                    waiNeiPan=0;
+                }else{
+                    waiNeiPan = AndroidUtils.chuFa(Double.parseDouble(bean.wai_num), Double.parseDouble(bean.nei_num), 5);
+                }
                 tv_wainei_pan.setText(waiNeiPan+"");
-
 
                 TextView tv_price_change_percent = holder.getTextView(R.id.tv_price_change_percent);
                 holder.setText(R.id.tv_price_change_percent,bean.change_price_percent+"%");

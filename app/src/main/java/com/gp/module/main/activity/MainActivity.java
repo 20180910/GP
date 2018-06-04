@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -55,6 +57,9 @@ public class MainActivity extends BaseActivity<HomeImp> {
     MyRadioButton rb_home_tab3;
     private MyRadioButton selectView;
 
+    Timer timer;
+    private final int periodTime = 5;
+
 
     private LocalBroadcastManager localBroadcastManager;
 
@@ -69,8 +74,33 @@ public class MainActivity extends BaseActivity<HomeImp> {
 //        addHomeFragment();
         hiddenBackIcon();
     }
+    private void stopTimer(){
+        if(timer!=null){
+            timer.cancel();
+            timer=null;
+        }
+    }
+    private void startTimer(){
+        if(timer!=null){
+            stopTimer();
+        }
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
+                int minute = CalendarUtil.get(Calendar.MINUTE);
+                if((hour>=9&&hour<11)||(hour==11&&minute<=30)||(hour>=13&&hour<15)){
+                    refreshZiXuan();
+                }
+            }
+        },1, periodTime * 1000);
+    }
+    private void refreshZiXuan() {
 
-    public void addHomeFragment(){
+    }
+
+    public void addHomeFragment() {
         homeFragment = new HomeFragment();
         addFragment(R.id.fl_content, homeFragment);
         setTabClickListener();
@@ -83,6 +113,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
         rb_home_tab3.setOnClickListener(getTabClickListener(3));
 
     }
+
     @NonNull
     private MyOnClickListener getTabClickListener(final int index) {
         return new MyOnClickListener() {
@@ -93,39 +124,43 @@ public class MainActivity extends BaseActivity<HomeImp> {
                         selectHome();
                         break;
                     case 2:
-                            selectOrder();
+                        selectOrder();
                         break;
                     case 3:
-                            selectMy();
+                        selectMy();
                         break;
                 }
             }
 
         };
     }
+
     private void copeFile() {
         showLoading();
         RXStart(new IOCallBack<Integer>() {
             @Override
             public void call(FlowableEmitter<Integer> emitter) {
-                String pathDatabase=mContext.getDatabasePath("MyGP").getPath();
-                System.out.println("path="+pathDatabase);
-                String newPath= Environment.getExternalStorageDirectory().getAbsolutePath() + "/"+ Constant.rootFileName+"/" + "MyGP"+System.currentTimeMillis();
+                String pathDatabase = mContext.getDatabasePath("MyGP").getPath();
+                System.out.println("path=" + pathDatabase);
+                String newPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Constant.rootFileName + "/" + "MyGP" + System.currentTimeMillis();
 
                 int copy = CopyFile.copySdcardFile(pathDatabase, newPath);
-                System.out.println("path=="+copy);
+                System.out.println("path==" + copy);
                 emitter.onNext(copy);
                 emitter.onComplete();
             }
+
             @Override
             public void onMyNext(Integer obj) {
-                showMsg(obj==-1?"复制失败":"复制成功");
+                showMsg(obj == -1 ? "复制失败" : "复制成功");
             }
+
             @Override
             public void onMyCompleted() {
                 super.onMyCompleted();
                 dismissLoading();
             }
+
             @Override
             public void onMyError(Throwable e) {
                 super.onMyError(e);
@@ -134,6 +169,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
         });
 
     }
+
     @Override
     protected void initRxBus() {
         super.initRxBus();
@@ -149,71 +185,75 @@ public class MainActivity extends BaseActivity<HomeImp> {
     @Override
     protected void initData() {
         boolean isFirstIntoApp = SPUtils.getBoolean(mContext, AppXml.isFirstIntoApp, true);
-        if(true){
-            SPUtils.setPrefBoolean(mContext,AppXml.isFirstIntoApp,false);
+        if (true) {
+            SPUtils.setPrefBoolean(mContext, AppXml.isFirstIntoApp, false);
             addGPData();
-        }else{
-            //添加当天数据
+        } else {
+            //收盘之后添加当天数据
             addEveryData();
         }
     }
-    private void addEveryData(){
+
+    private void addEveryData() {
         int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
         int minute = CalendarUtil.get(Calendar.MINUTE);
-        String isSaveTodayData = SPUtils.getString(mContext, AppXml.isSaveTodayData,"");
+        String isSaveTodayData = SPUtils.getString(mContext, AppXml.isSaveTodayData, "");
         String dateToString = DateUtils.dateToString(new Date());
-        if(!dateToString.equals(isSaveTodayData)){
-            if(hour>15||(hour==15&&minute>2)){
+        if (!dateToString.equals(isSaveTodayData)) {
+            if (hour > 15 || (hour == 15 && minute > 2)) {
                 addTodayData();
-            }else{
+            } else {
                 myDialog.dismiss();
                 addHomeFragment();
             }
-        }else{
+        } else {
             myDialog.dismiss();
             addHomeFragment();
         }
     }
+
     //添加当天数据
     private void addTodayData() {
-        if(myDialog==null){
+        if (myDialog == null) {
             initDialog();
         }
         RXStart(new IOCallBack<String>() {
             @Override
             public void call(final FlowableEmitter<String> emitter) {
                 List<GpBean> list = mDaoImp.selectGpBean(1, true);
-                Log("===size"+list.size());
-                final int count=list.size();
+                Log("===size" + list.size());
+                final int count = list.size();
                 for (int i = 0; i < count; i++) {
                     String obj = ApiRequest.getDataTongBu(list.get(i).code, list.get(i).type);
-                    if(obj!=null&&obj.indexOf("v_pv_none_match")==-1){
+                    if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
                         GpBean bean = BaseGP.formatStr(obj);
                         //修改code表的name
-                        bean.type=list.get(i).type;
-                        bean.uid=System.nanoTime()+"";
-                        bean.gp_uid=list.get(i)._id;
-                        bean.update_time=new Date().getTime();
-                        bean.create_time=new Date().getTime();
+                        bean.type = list.get(i).type;
+                        bean.uid = System.nanoTime() + "";
+                        bean.gp_uid = list.get(i)._id;
+                        bean.update_time = new Date().getTime();
+                        bean.create_time = new Date().getTime();
 
-                        bean.gp_year= CalendarUtil.getYear();
-                        bean.gp_month=CalendarUtil.getMonth();
-                        bean.gp_day=CalendarUtil.getDay();
+                        bean.gp_year = CalendarUtil.getYear();
+                        bean.gp_month = CalendarUtil.getMonth();
+                        bean.gp_day = CalendarUtil.getDay();
 
                         long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
-                        Log("==addDataToTable="+l);
+                        Log("==addDataToTable=" + l);
                     }
-                    int progress=i+1;
-                    emitter.onNext(progress+"/"+count);
+                    int progress = i + 1;
+                    emitter.onNext(progress + "/" + count);
                 }
                 emitter.onComplete();
             }
+
             @Override
             public void onMyNext(String msg) {
 //                showMsg(msg);
                 tv_updatedata_progress.setVisibility(View.VISIBLE);
                 tv_updatedata_progress.setText(msg);
             }
+
             @Override
             public void onMyCompleted() {
                 super.onMyCompleted();
@@ -231,33 +271,33 @@ public class MainActivity extends BaseActivity<HomeImp> {
     }
 
     //添加数据到code表
-    public void addGPData(){
+    public void addGPData() {
         initDialog();
-        RXStart(pl_load,new IOCallBack<int[]>() {
+        RXStart(pl_load, new IOCallBack<int[]>() {
             @Override
             public void call(FlowableEmitter<int[]> emitter) {
                 mDaoImp.deleteTableCode();
                 List<String> sh = sh();
                 List<String> sz = sz();
-                int count=sh.size()+sz.size();
-                int scaleNum=0;
+                int count = sh.size() + sz.size();
+                int scaleNum = 0;
                 int[] obj;
 //                for (int i = 0; i < sh.size(); i++) {
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < 10; i++) {
                     scaleNum++;
-                    obj=new int[2];
-                    obj[0]=scaleNum;
-                    obj[1]=count;
+                    obj = new int[2];
+                    obj[0] = scaleNum;
+                    obj[1] = count;
                     addCodeData(sh.get(i), DBConstant.type_6);
 //                    mDaoImp.addGP(sh.get(i), DBConstant.type_6);
                     emitter.onNext(obj);
                 }
 //                for (int i = 0; i < sz.size(); i++) {
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < 10; i++) {
                     scaleNum++;
-                    obj=new int[2];
-                    obj[0]=scaleNum;
-                    obj[1]=count;
+                    obj = new int[2];
+                    obj[0] = scaleNum;
+                    obj[1] = count;
                     addCodeData(sh.get(i), DBConstant.type_0);
 //                    long result = mDaoImp.addGP(sz.get(i), DBConstant.type_0);
                     emitter.onNext(obj);
@@ -268,13 +308,15 @@ public class MainActivity extends BaseActivity<HomeImp> {
             @Override
             public void onMyNext(int[] obj) {
                 tv_adddata_progress.setVisibility(View.VISIBLE);
-                tv_adddata_progress.setText(obj[0]+"/"+obj[1]);
+                tv_adddata_progress.setText(obj[0] + "/" + obj[1]);
             }
+
             @Override
             public void onMyCompleted() {
                 super.onMyCompleted();
                 addEveryData();
             }
+
             @Override
             public void onMyError(Throwable e) {
                 super.onMyError(e);
@@ -283,35 +325,38 @@ public class MainActivity extends BaseActivity<HomeImp> {
             }
         });
     }
-    private void addCodeData(String code,int type){
+
+    private void addCodeData(String code, int type) {
         String obj = ApiRequest.getDataTongBu(code, type);
-        if(obj!=null&&obj.indexOf("v_pv_none_match")==-1){
+        if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
             GpBean bean = BaseGP.formatStr(obj);
             //修改code表的name
-            long l = mDaoImp.addGP(code,bean.gpstr,bean.name,type+"");
+            long l = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
         }
     }
+
     private List sz() {
         String code = StreamUtils.get(mContext, R.raw.sz);
         String sz = code.substring(code.indexOf("sz"), code.indexOf(".html"));
-        List<String> list=new ArrayList<>();
-        while (code.lastIndexOf(".html")-code.lastIndexOf("sz")>2){
+        List<String> list = new ArrayList<>();
+        while (code.lastIndexOf(".html") - code.lastIndexOf("sz") > 2) {
             String string = subString(code, "sz", ".html");
             list.add(string);
-            code=code.replace(string,"").replace(" ","").replace("sz.html","");
+            code = code.replace(string, "").replace(" ", "").replace("sz.html", "");
         }
-        Log("#==size="+list.size());
+        Log("#==size=" + list.size());
         return list;
     }
+
     private List sh() {
         String code = StreamUtils.get(mContext, R.raw.sh);
-        List<String> list=new ArrayList<>();
-        while (code.lastIndexOf(".html")-code.lastIndexOf("sh")>2){
+        List<String> list = new ArrayList<>();
+        while (code.lastIndexOf(".html") - code.lastIndexOf("sh") > 2) {
             String string = subString(code, "sh", ".html");
             list.add(string);
-            code=code.replace(string,"").replace(" ","").replace("sh.html","");
+            code = code.replace(string, "").replace(" ", "").replace("sh.html", "");
         }
-        Log("#==size="+list.size());
+        Log("#==size=" + list.size());
         return list;
     }
 
@@ -361,7 +406,6 @@ public class MainActivity extends BaseActivity<HomeImp> {
     }
 
 
-
     @OnClick({R.id.app_right_tv})
     protected void onViewClick(View v) {
         switch (v.getId()) {
@@ -372,6 +416,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
     }
 
     private long mExitTime;
+
     @Override
     public void onBackPressed() {
         if ((System.currentTimeMillis() - mExitTime) > 1500) {
@@ -381,6 +426,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
             super.onBackPressed();
         }
     }
+
     public static String subString(String str, String strStart, String strEnd) {
         /* 找出指定的2个字符在 该字符串里面的 位置 */
         int strStartIndex = str.indexOf(strStart);
@@ -394,7 +440,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
             return "字符串 :---->" + str + "<---- 中不存在 " + strEnd + ", 无法截取目标字符串";
         }
         /* 开始截取 */
-        String result = str.substring(strStartIndex+2, strEndIndex);
+        String result = str.substring(strStartIndex + 2, strEndIndex);
         return result;
     }
 }
