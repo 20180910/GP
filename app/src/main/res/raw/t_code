@@ -1,11 +1,11 @@
 create table T_Code(
-_id INTEGER PRIMARY KEY AUTOINCREMENT not null ,
+_id             INTEGER PRIMARY KEY AUTOINCREMENT not null ,
 uid             varchar(255) not null,--唯一标识，主键
 create_time     varchar(255) not null,
-update_time varchar(255) not null,
--- ~ 分割字符串中内容，下标从0开始，依次为
-gpstr           varchar(255) ,--  0: 未知                        v_sz000858=51
+update_time     varchar(255) not null,
+gpstr           varchar(255) ,--  分割字符串中内容，下标从0开始，依次为 0: 未知                        v_sz000858=51
 name            varchar(255) ,--  1: 名字                        五 粮 液
 code            varchar(255) not null,--  2: 代码                        000858
-type            INTEGER not null        --0深圳，6上海
+type            INTEGER not null,        --0深圳，6上海
+status          INTEGER default 0        --1加入自选
 )
