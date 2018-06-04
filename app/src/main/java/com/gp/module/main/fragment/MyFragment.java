@@ -1,5 +1,6 @@
 package com.gp.module.main.fragment;
 
+import android.os.Bundle;
 import android.view.View;
 
 import com.gp.R;
@@ -15,6 +16,14 @@ public class MyFragment extends BaseFragment {
         return R.layout._3frag;
     }
 
+    public static MyFragment newInstance() {
+        
+        Bundle args = new Bundle();
+        
+        MyFragment fragment = new MyFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
     @Override
     protected void initView() {
 

@@ -24,7 +24,6 @@ import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
 import com.gp.module.main.fragment.HomeFragment;
 import com.gp.module.main.fragment.MyFragment;
-import com.gp.module.main.fragment.ZiXuanFragment;
 import com.gp.module.main.network.ApiRequest;
 import com.gp.tools.CalendarUtil;
 import com.gp.tools.CopyFile;
@@ -43,7 +42,7 @@ import io.reactivex.FlowableEmitter;
 
 public class MainActivity extends BaseActivity<HomeImp> {
     HomeFragment homeFragment;
-    ZiXuanFragment ziXuanFragment;
+    HomeFragment ziXuanFragment;
     MyFragment myFragment;
 
     @BindView(R.id.fl_content)
@@ -102,7 +101,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
     }
 
     public void addHomeFragment() {
-        homeFragment = new HomeFragment();
+        homeFragment =HomeFragment.newInstance(Constant.ziXuan_0);;
         addFragment(R.id.fl_content, homeFragment);
         setTabClickListener();
     }
@@ -397,7 +396,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
         }
         selectView = rb_home_tab2;
         if (ziXuanFragment == null) {
-            ziXuanFragment = new ZiXuanFragment();
+            ziXuanFragment =HomeFragment.newInstance(Constant.ziXuan_1);
             addFragment(R.id.fl_content, ziXuanFragment);
         } else {
             showFragment(ziXuanFragment);
@@ -412,7 +411,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
         }
         selectView = rb_home_tab3;
         if (myFragment == null) {
-            myFragment = new MyFragment();
+            myFragment = MyFragment.newInstance();
             addFragment(R.id.fl_content, myFragment);
         } else {
             showFragment(myFragment);

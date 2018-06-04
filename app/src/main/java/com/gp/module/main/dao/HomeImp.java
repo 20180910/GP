@@ -237,19 +237,32 @@ public class HomeImp extends BaseDaoImp {
         return insert;
     }
 
+
     public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp) {
+        return selectEveryDay(page,searchInfo,isUp,false);
+    }
+    public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp,boolean isZiXuan) {
         String orderBy = DBConstant.change_price_percent + " asc";
         if (isUp) {
             orderBy = DBConstant.change_price_percent + " desc";
         }
-        StringBuffer searchSql = null;
-        String[] searchStr = new String[2];
+        StringBuffer searchSql =null;
+        if(isZiXuan){
+            searchSql= new StringBuffer();
+            searchSql.append(DBConstant.status + " = '1' ");
+        }
+        String[] searchStr =null;
         if (!TextUtils.isEmpty(searchInfo)) {
-            searchSql = new StringBuffer();
+            searchStr= new String[2];
+            if(searchSql==null){
+                searchSql = new StringBuffer();
+            }
             searchSql.append(DBConstant.name + " like ? or ");
             searchSql.append(DBConstant.code + " like ? ");
+
             searchStr[0] = "%" + searchInfo + "%";
             searchStr[1] = "%" + searchInfo + "%";
+
         }
         String limit = getLimit(page);
         SQLiteDatabase db = getWritableDatabase();
@@ -319,7 +332,7 @@ public class HomeImp extends BaseDaoImp {
                         DBConstant.average_price,
                         DBConstant.shi_ying_lv_dong,
                         DBConstant.shi_ying_lv_jing
-                }, searchSql != null ? searchSql.toString() : null, searchSql != null ? searchStr : null, null, null, orderBy, limit);
+                }, searchSql==null?null:searchSql.toString(), searchStr, null, null, orderBy, limit);
         List<GpBean> list = new ArrayList<GpBean>();
         GpBean bean;
         while (query.moveToNext()) {
@@ -472,11 +485,11 @@ public class HomeImp extends BaseDaoImp {
         int count = cursor.getCount();
         return count;
     }
-    public boolean joinZiXuan(String code) {
+    public boolean joinZiXuan(String code,String tableName) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "1");
-        long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{code});
+        long insert = db.update(tableName, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
         Log.i(TAG+"===","==insert="+insert);
         return getBoolean(insert);
@@ -484,11 +497,11 @@ public class HomeImp extends BaseDaoImp {
     private boolean getBoolean(long l){
         return l>0?true:false;
     }
-    public boolean removeZiXuan(String code) {
+    public boolean removeZiXuan(String code,String tableName) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "0");
-        long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{code});
+        long insert = db.update(tableName, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
         Log.i(TAG+"===","==insert="+insert);
         return getBoolean(insert);

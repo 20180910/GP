@@ -1,5 +1,6 @@
 package com.gp.module.main.fragment;
 
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -8,11 +9,16 @@ import android.widget.TextView;
 import com.github.androidtools.inter.MyOnClickListener;
 import com.github.baseclass.adapter.MyLoadMoreAdapter;
 import com.github.baseclass.adapter.MyRecyclerViewHolder;
+import com.github.rxbus.RxBus;
+import com.gp.Constant;
 import com.gp.R;
 import com.gp.base.BaseFragment;
+import com.gp.base.EventCallback;
 import com.gp.base.IOCallBack;
+import com.gp.database.DBManager;
 import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
+import com.gp.module.main.event.JoinEvent;
 import com.library.base.tools.has.AndroidUtils;
 
 import java.util.List;
@@ -31,6 +37,27 @@ public class HomeFragment extends BaseFragment<HomeImp> {
     @Override
     protected int getContentView() {
         return R.layout.home_frag;
+    }
+
+    public static HomeFragment newInstance(int ziXuanFlag) {
+        Bundle args = new Bundle();
+        args.putInt(Constant.ziXuanFlag, ziXuanFlag);
+        HomeFragment fragment = new HomeFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    protected void initRxBus() {
+        super.initRxBus();
+        getEvent(JoinEvent.class, new EventCallback<JoinEvent>() {
+            @Override
+            public void accept(JoinEvent event) {
+                if(getArguments().getInt(Constant.ziXuanFlag,0)==1){
+                    getData(1,false);
+                }
+            }
+        });
     }
 
     @Override
@@ -101,7 +128,8 @@ public class HomeFragment extends BaseFragment<HomeImp> {
             public void call(FlowableEmitter<String> emitter) {
                 boolean ziXuan = mDaoImp.isZiXuan(code);
                 if(ziXuan){
-                    boolean removeZiXuan = mDaoImp.removeZiXuan(code);
+                    boolean removeZiXuan = mDaoImp.removeZiXuan(code, DBManager.T_Code);
+                    boolean removeZiXuanDay = mDaoImp.removeZiXuan(code, DBManager.T_Everyday);
                     if(removeZiXuan){
                         emitter.onNext("删除自选");
                     }else{
@@ -109,7 +137,8 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                     }
                     emitter.onComplete();
                 }else{
-                    boolean joinZiXuan = mDaoImp.joinZiXuan(code);
+                    boolean joinZiXuan = mDaoImp.joinZiXuan(code, DBManager.T_Code);
+                    boolean joinZiXuanDay = mDaoImp.joinZiXuan(code, DBManager.T_Everyday);
                     if(joinZiXuan){
                         emitter.onNext("添加自选");
                         emitter.onComplete();
@@ -126,6 +155,7 @@ public class HomeFragment extends BaseFragment<HomeImp> {
             @Override
             public void onMyCompleted() {
                 super.onMyCompleted();
+                RxBus.getInstance().post(new JoinEvent());
                 dismissLoading();
             }
             @Override
@@ -149,7 +179,8 @@ public class HomeFragment extends BaseFragment<HomeImp> {
         RXStart(pl_load, new IOCallBack<List<GpBean>>() {
             @Override
             public void call(FlowableEmitter<List<GpBean>> emitter) {
-                List<GpBean> list = mDaoImp.selectEveryDay(page, null, true);
+                int isZiXuan=getArguments().getInt(Constant.ziXuanFlag,0);
+                List<GpBean> list = mDaoImp.selectEveryDay(page, null, true,isZiXuan==1?true:false);
                 emitter.onNext(list);
                 emitter.onComplete();
             }
