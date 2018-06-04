@@ -211,7 +211,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
             dialogDismiss();
             addHomeFragment();
         }
-        addTodayData();
+//        addTodayData();
     }
     public void dialogDismiss(){
         if(myDialog!=null){

@@ -472,29 +472,34 @@ public class HomeImp extends BaseDaoImp {
         int count = cursor.getCount();
         return count;
     }
-    public long joinZiXuan(String uid) {
+    public boolean joinZiXuan(String code) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "1");
-        long insert = db.update(DBManager.T_Code, values, DBConstant.uid + " =? ", new String[]{uid});
+        long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
-        return insert;
+        Log.i(TAG+"===","==insert="+insert);
+        return getBoolean(insert);
     }
-    public long removeZiXuan(String uid) {
+    private boolean getBoolean(long l){
+        return l>0?true:false;
+    }
+    public boolean removeZiXuan(String code) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "0");
-        long insert = db.update(DBManager.T_Code, values, DBConstant.uid + " =? ", new String[]{uid});
+        long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
-        return insert;
+        Log.i(TAG+"===","==insert="+insert);
+        return getBoolean(insert);
     }
-    public boolean isZiXuan(String uid) {
+    public boolean isZiXuan(String code) {
         SQLiteDatabase db = getWritableDatabase();
         boolean scale=false;
         Cursor query = db.query(DBManager.T_Code,
                 new String[]{
                         DBConstant.status
-                }, " uid=? ", new String[]{uid}, null, null, null, null );
+                }, DBConstant.code +"=? and "+DBConstant.status+"='1'", new String[]{code}, null, null, null, null );
         while (query.moveToNext()) {
             int status = query.getInt(query.getColumnIndex(DBConstant.status));
             if(status==1){

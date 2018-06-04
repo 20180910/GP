@@ -84,7 +84,7 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                 holder.getView(R.id.ll_join_zx).setOnClickListener(new MyOnClickListener() {
                     @Override
                     protected void onNoDoubleClick(View view) {
-                        joinZiXuan(bean.uid);
+                        joinZiXuan(bean.code);
                     }
                 });
 
@@ -94,16 +94,45 @@ public class HomeFragment extends BaseFragment<HomeImp> {
         rv_all_gp.setAdapter(adapter);
     }
 
-    private void joinZiXuan(final String uid) {
+    private void joinZiXuan(final String code) {
         showLoading();
-        RXStart(new IOCallBack<Boolean>() {
+        RXStart(new IOCallBack<String>() {
             @Override
-            public void call(FlowableEmitter<Boolean> emitter) {
-                mDaoImp.joinZiXuan(uid);
+            public void call(FlowableEmitter<String> emitter) {
+                boolean ziXuan = mDaoImp.isZiXuan(code);
+                if(ziXuan){
+                    boolean removeZiXuan = mDaoImp.removeZiXuan(code);
+                    if(removeZiXuan){
+                        emitter.onNext("删除自选");
+                    }else{
+                        emitter.onNext("删除自选失败");
+                    }
+                    emitter.onComplete();
+                }else{
+                    boolean joinZiXuan = mDaoImp.joinZiXuan(code);
+                    if(joinZiXuan){
+                        emitter.onNext("添加自选");
+                        emitter.onComplete();
+                    }else{
+                        emitter.onError(new Throwable("0"));
+                    }
+                }
+
             }
             @Override
-            public void onMyNext(Boolean obj) {
-
+            public void onMyNext(String obj) {
+                showMsg(obj);
+            }
+            @Override
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                dismissLoading();
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                showMsg("添加失败");
+                dismissLoading();
             }
         });
     }
