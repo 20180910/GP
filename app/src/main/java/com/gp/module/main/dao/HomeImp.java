@@ -43,13 +43,17 @@ public class HomeImp extends BaseDaoImp {
         return true;
     }
 
-    public long addGP(String code,String type) {
+    public long addGP(String code,String str,String name,String type) {
 //        Calendar instance = Calendar.getInstance();
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
 
         values.put(DBConstant.uid,System.nanoTime()+"");
         values.put(DBConstant.code,code);
+
+
+        values.put(DBConstant.gpstr,str);
+        values.put(DBConstant.name,name);
 
 //        values.put(DBConstant.gp_year,instance.get(Calendar.YEAR));
 //        values.put(DBConstant.gp_month,instance.get(Calendar.MONTH)+1);
@@ -226,5 +230,232 @@ public class HomeImp extends BaseDaoImp {
         long insert = db.insert(tableName, null, values);
         db.close();
         return insert;
+    }
+
+    public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp) {
+        String orderBy = DBConstant.change_price_percent + " asc";
+        if (isUp) {
+            orderBy = DBConstant.change_price_percent + " desc";
+        }
+        StringBuffer searchSql=null;
+        String[]searchStr=new String[2];
+        if(!TextUtils.isEmpty(searchInfo)){
+            searchSql=new StringBuffer();
+            searchSql.append(DBConstant.name+" like ? or ");
+            searchSql.append(DBConstant.code+" like ? ");
+            searchStr[0]="%"+searchInfo+"%";
+            searchStr[1]="%"+searchInfo+"%";
+        }
+        String limit=getLimit(page);
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor query = db.query(DBManager.T_Everyday,
+                new String[]{
+                        DBConstant._id                    ,
+                        DBConstant.uid                    ,
+                        DBConstant.gp_uid                 ,
+                        DBConstant.create_time            ,
+                        DBConstant.update_time            ,
+                        DBConstant.type                   ,
+                        DBConstant.status                 ,
+                        DBConstant.gp_year                ,
+                        DBConstant.gp_month               ,
+                        DBConstant.gp_day                 ,
+                        DBConstant.gpstr                  ,
+                        DBConstant.name                   ,
+                        DBConstant.code                   ,
+                        DBConstant.now_price              ,
+                        DBConstant.zuo_price              ,
+                        DBConstant.jin_price              ,
+                        DBConstant.total_volume           ,
+                        DBConstant.wai_num                ,
+                        DBConstant.nei_num                ,
+                        DBConstant.buy_price              ,
+                        DBConstant.buy_volume             ,
+                        DBConstant.buy2_price             ,
+                        DBConstant.buy2_volume            ,
+                        DBConstant.buy3_price             ,
+                        DBConstant.buy3_volume            ,
+                        DBConstant.buy4_price             ,
+                        DBConstant.buy4_volume            ,
+                        DBConstant.buy5_price             ,
+                        DBConstant.buy5_volume            ,
+                        DBConstant.sell_price             ,
+                        DBConstant.sell_volume            ,
+                        DBConstant.sell2_price            ,
+                        DBConstant.sell2_volume           ,
+                        DBConstant.sell3_price            ,
+                        DBConstant.sell3_volume           ,
+                        DBConstant.sell4_price            ,
+                        DBConstant.sell4_volume           ,
+                        DBConstant.sell5_price            ,
+                        DBConstant.sell5_volume           ,
+                        DBConstant.recent_trade           ,
+                        DBConstant.recent_time            ,
+                        DBConstant.change_price           ,
+                        DBConstant.change_price_percent   ,
+                        DBConstant.max_price              ,
+                        DBConstant.min_price              ,
+                        DBConstant.last_price             ,
+                        DBConstant.last_volume_num        ,
+                        DBConstant.last_volume_price      ,
+                        DBConstant.huan_shou_lv           ,
+                        DBConstant.shi_ying_lv_ttm        ,
+                        DBConstant.ziduan1                ,
+                        DBConstant.max_price2             ,
+                        DBConstant.min_price2             ,
+                        DBConstant.zhen_fu                ,
+                        DBConstant.liutong_shizhi         ,
+                        DBConstant.total_shizhi           ,
+                        DBConstant.shi_jing_lv            ,
+                        DBConstant.top_price              ,
+                        DBConstant.bottom_price           ,
+                        DBConstant.liang_bi               ,
+                        DBConstant.ziduan2                ,
+                        DBConstant.average_price          ,
+                        DBConstant.shi_ying_lv_dong       ,
+                        DBConstant.shi_ying_lv_jing
+                }, searchSql!=null?searchSql.toString():null,searchSql!=null?searchStr:null, null, null, orderBy,limit);
+        List<GpBean> list = new ArrayList<GpBean>();
+        GpBean bean;
+        while (query.moveToNext()) {
+            bean = new GpBean();
+            String _id                     = query.getString(query.getColumnIndex(DBConstant._id                    ));
+            String uid                     = query.getString(query.getColumnIndex(DBConstant.uid                    ));
+            String gp_uid                  = query.getString(query.getColumnIndex(DBConstant.gp_uid                 ));
+            long create_time               = query.getLong(query.getColumnIndex(DBConstant.create_time            ));
+            long update_time               = query.getLong(query.getColumnIndex(DBConstant.update_time            ));
+            int type                    = query.getInt(query.getColumnIndex(DBConstant.type                   ));
+            int status                  = query.getInt(query.getColumnIndex(DBConstant.status                 ));
+            int gp_year                 = query.getInt(query.getColumnIndex(DBConstant.gp_year                ));
+            int gp_month                = query.getInt(query.getColumnIndex(DBConstant.gp_month               ));
+            int gp_day                  = query.getInt(query.getColumnIndex(DBConstant.gp_day                 ));
+            String gpstr                   = query.getString(query.getColumnIndex(DBConstant.gpstr                  ));
+            String name                    = query.getString(query.getColumnIndex(DBConstant.name                   ));
+            String code                    = query.getString(query.getColumnIndex(DBConstant.code                   ));
+            float now_price               = query.getFloat(query.getColumnIndex(DBConstant.now_price              ));
+            float zuo_price               = query.getFloat(query.getColumnIndex(DBConstant.zuo_price              ));
+            float jin_price               = query.getFloat(query.getColumnIndex(DBConstant.jin_price              ));
+            String total_volume            = query.getString(query.getColumnIndex(DBConstant.total_volume           ));
+            String wai_num                 = query.getString(query.getColumnIndex(DBConstant.wai_num                ));
+            String nei_num                 = query.getString(query.getColumnIndex(DBConstant.nei_num                ));
+            float buy_price               = query.getFloat(query.getColumnIndex(DBConstant.buy_price              ));
+            String buy_volume              = query.getString(query.getColumnIndex(DBConstant.buy_volume             ));
+            float buy2_price              = query.getFloat(query.getColumnIndex(DBConstant.buy2_price             ));
+            String buy2_volume             = query.getString(query.getColumnIndex(DBConstant.buy2_volume            ));
+            float buy3_price              = query.getFloat(query.getColumnIndex(DBConstant.buy3_price             ));
+            String buy3_volume             = query.getString(query.getColumnIndex(DBConstant.buy3_volume            ));
+            float buy4_price              = query.getFloat(query.getColumnIndex(DBConstant.buy4_price             ));
+            String buy4_volume             = query.getString(query.getColumnIndex(DBConstant.buy4_volume            ));
+            float buy5_price              = query.getFloat(query.getColumnIndex(DBConstant.buy5_price             ));
+            String buy5_volume             = query.getString(query.getColumnIndex(DBConstant.buy5_volume            ));
+            float sell_price              = query.getFloat(query.getColumnIndex(DBConstant.sell_price             ));
+            String sell_volume             = query.getString(query.getColumnIndex(DBConstant.sell_volume            ));
+            float sell2_price             = query.getFloat(query.getColumnIndex(DBConstant.sell2_price            ));
+            String sell2_volume            = query.getString(query.getColumnIndex(DBConstant.sell2_volume           ));
+            float sell3_price             = query.getFloat(query.getColumnIndex(DBConstant.sell3_price            ));
+            String sell3_volume            = query.getString(query.getColumnIndex(DBConstant.sell3_volume           ));
+            float sell4_price             = query.getFloat(query.getColumnIndex(DBConstant.sell4_price            ));
+            String sell4_volume            = query.getString(query.getColumnIndex(DBConstant.sell4_volume           ));
+            float sell5_price             = query.getFloat(query.getColumnIndex(DBConstant.sell5_price            ));
+            String sell5_volume            = query.getString(query.getColumnIndex(DBConstant.sell5_volume           ));
+            String recent_trade            = query.getString(query.getColumnIndex(DBConstant.recent_trade           ));
+            String recent_time             = query.getString(query.getColumnIndex(DBConstant.recent_time            ));
+            float change_price            = query.getFloat(query.getColumnIndex(DBConstant.change_price           ));
+            float change_price_percent    = query.getFloat(query.getColumnIndex(DBConstant.change_price_percent   ));
+            float max_price               = query.getFloat(query.getColumnIndex(DBConstant.max_price              ));
+            float min_price               = query.getFloat(query.getColumnIndex(DBConstant.min_price              ));
+            String last_price              = query.getString(query.getColumnIndex(DBConstant.last_price             ));
+            String last_volume_num         = query.getString(query.getColumnIndex(DBConstant.last_volume_num        ));
+            String last_volume_price       = query.getString(query.getColumnIndex(DBConstant.last_volume_price      ));
+            float huan_shou_lv            = query.getFloat(query.getColumnIndex(DBConstant.huan_shou_lv           ));
+            float shi_ying_lv_ttm         = query.getFloat(query.getColumnIndex(DBConstant.shi_ying_lv_ttm        ));
+            String ziduan1                 = query.getString(query.getColumnIndex(DBConstant.ziduan1                ));
+            float max_price2              = query.getFloat(query.getColumnIndex(DBConstant.max_price2             ));
+            float min_price2              = query.getFloat(query.getColumnIndex(DBConstant.min_price2             ));
+            float zhen_fu                 = query.getFloat(query.getColumnIndex(DBConstant.zhen_fu                ));
+            float liutong_shizhi          = query.getFloat(query.getColumnIndex(DBConstant.liutong_shizhi         ));
+            float total_shizhi            = query.getFloat(query.getColumnIndex(DBConstant.total_shizhi           ));
+            float shi_jing_lv             = query.getFloat(query.getColumnIndex(DBConstant.shi_jing_lv            ));
+            float top_price               = query.getFloat(query.getColumnIndex(DBConstant.top_price              ));
+            float bottom_price            = query.getFloat(query.getColumnIndex(DBConstant.bottom_price           ));
+            float liang_bi                = query.getFloat(query.getColumnIndex(DBConstant.liang_bi               ));
+            String ziduan2                 = query.getString(query.getColumnIndex(DBConstant.ziduan2                ));
+            float average_price           = query.getFloat(query.getColumnIndex(DBConstant.average_price          ));
+            float shi_ying_lv_dong        = query.getFloat(query.getColumnIndex(DBConstant.shi_ying_lv_dong       ));
+            float shi_ying_lv_jing        = query.getFloat(query.getColumnIndex(DBConstant.shi_ying_lv_jing       ));
+
+//            long updateTime = string2Date(query.getString(query.getColumnIndex(DBConstant.updateTime)));
+//            long creatTime = string2Date(query.getString(query.getColumnIndex(DBConstant.createTime)));
+
+
+            bean._id                    =_id                    ;
+            bean.uid                    =uid                    ;
+            bean.gp_uid                 =gp_uid                 ;
+            bean.create_time            =  create_time             ;
+            bean.update_time            =update_time            ;
+            bean.type                   =type                   ;
+            bean.status                 =status                 ;
+            bean.gp_year                =gp_year                ;
+            bean.gp_month               =gp_month               ;
+            bean.gp_day                 =gp_day                 ;
+            bean.gpstr                  =gpstr                  ;
+            bean.name                   =name                   ;
+            bean.code                   =code                   ;
+            bean.now_price              =now_price              ;
+            bean.zuo_price              =zuo_price              ;
+            bean.jin_price              =jin_price              ;
+            bean.total_volume           =total_volume           ;
+            bean.wai_num                =wai_num                ;
+            bean.nei_num                =nei_num                ;
+            bean.buy_price              =buy_price              ;
+            bean.buy_volume             =buy_volume             ;
+            bean.buy2_price             =buy2_price             ;
+            bean.buy2_volume            =buy2_volume            ;
+            bean.buy3_price             =buy3_price             ;
+            bean.buy3_volume            =buy3_volume            ;
+            bean.buy4_price             =buy4_price             ;
+            bean.buy4_volume            =buy4_volume            ;
+            bean.buy5_price             =buy5_price             ;
+            bean.buy5_volume            =buy5_volume            ;
+            bean.sell_price             =sell_price             ;
+            bean.sell_volume            =sell_volume            ;
+            bean.sell2_price            =sell2_price            ;
+            bean.sell2_volume           =sell2_volume           ;
+            bean.sell3_price            =sell3_price            ;
+            bean.sell3_volume           =sell3_volume           ;
+            bean.sell4_price            =sell4_price            ;
+            bean.sell4_volume           =sell4_volume           ;
+            bean.sell5_price            =sell5_price            ;
+            bean.sell5_volume           =sell5_volume           ;
+            bean.recent_trade           =recent_trade           ;
+            bean.recent_time            =recent_time            ;
+            bean.change_price           =change_price           ;
+            bean.change_price_percent   =change_price_percent   ;
+            bean.max_price              =max_price              ;
+            bean.min_price              =min_price              ;
+            bean.last_price             =last_price             ;
+            bean.last_volume_num        =last_volume_num        ;
+            bean.last_volume_price      =last_volume_price      ;
+            bean.huan_shou_lv           =huan_shou_lv           ;
+            bean.shi_ying_lv_ttm        =shi_ying_lv_ttm        ;
+            bean.ziduan1                =ziduan1                ;
+            bean.max_price2             =max_price2             ;
+            bean.min_price2             =min_price2             ;
+            bean.zhen_fu                =zhen_fu                ;
+            bean.liutong_shizhi         =liutong_shizhi         ;
+            bean.total_shizhi           =total_shizhi           ;
+            bean.shi_jing_lv            =shi_jing_lv            ;
+            bean.top_price              =top_price              ;
+            bean.bottom_price           =bottom_price           ;
+            bean.liang_bi               =liang_bi               ;
+            bean.ziduan2                =ziduan2                ;
+            bean.average_price          =average_price          ;
+            bean.shi_ying_lv_dong       =shi_ying_lv_dong       ;
+            bean.shi_ying_lv_jing       =shi_ying_lv_jing       ;
+
+            list.add(bean);
+        }
+        db.close();
+        return list;
     }
 }

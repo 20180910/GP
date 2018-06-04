@@ -21,6 +21,7 @@
     <color name="image_bg">#FFF1EFEF</color>
     <color name="gray_d4">#d4d4d4</color>
     <color name="gray_dd">#DDDDDD</color>
+    <color name="green_gp">#0bab6c</color>
     <color name="green">#2DDB97</color>
     <color name="green_press">#FF20D18C</color>
     <color name="green1">#34e8a6</color>
@@ -35,6 +36,7 @@
     <color name="orange_press">#eaa304</color>
     <color name="blue">#4ed3fd</color>
     <color name="red">#fc353a</color>
+    <color name="red_gp">#FFC71B20</color>
     <color name="gray_press">#FFE4E0E0</color>
     <color name="blue_press">#E2419BF3</color>
     <color name="black_33">#333333</color>

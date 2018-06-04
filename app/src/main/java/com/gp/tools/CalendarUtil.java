@@ -7,6 +7,10 @@ import java.util.Calendar;
  */
 
 public class CalendarUtil {
+    public static int get(int field){
+        Calendar calendar=Calendar.getInstance();
+        return calendar.get(field);
+    }
     public static int getYear(){
         Calendar calendar=Calendar.getInstance();
         return calendar.get(Calendar.YEAR);

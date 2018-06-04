@@ -1,23 +1,19 @@
 package com.gp.module.main.fragment;
 
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.TextView;
 
-import com.github.androidtools.DateUtils;
-import com.github.androidtools.SPUtils;
-import com.gp.AppXml;
+import com.github.baseclass.adapter.MyLoadMoreAdapter;
+import com.github.baseclass.adapter.MyRecyclerViewHolder;
 import com.gp.R;
 import com.gp.base.BaseFragment;
-import com.gp.base.BaseGP;
 import com.gp.base.IOCallBack;
-import com.gp.database.DBManager;
 import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
-import com.gp.module.main.network.ApiRequest;
-import com.gp.tools.CalendarUtil;
+import com.library.base.tools.has.AndroidUtils;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,6 +26,7 @@ import io.reactivex.FlowableEmitter;
 public class HomeFragment extends BaseFragment<HomeImp> {
     @BindView(R.id.rv_all_gp)
     RecyclerView rv_all_gp;
+    MyLoadMoreAdapter adapter;
     @Override
     protected int getContentView() {
         return R.layout.home_frag;
@@ -37,92 +34,81 @@ public class HomeFragment extends BaseFragment<HomeImp> {
 
     @Override
     protected void initView() {
+        adapter=new MyLoadMoreAdapter<GpBean>(mContext,R.layout.every_day_item,pageSize) {
+            @Override
+            public void bindData(MyRecyclerViewHolder holder, int position, GpBean bean) {
+                holder.setText(R.id.tv_name,bean.name);
+                holder.setText(R.id.tv_code,bean.code);
 
+                TextView tv_price = holder.getTextView(R.id.tv_price);
+                tv_price.setText(bean.now_price+"");
+
+                TextView tv_wainei_pan = holder.getTextView(R.id.tv_wainei_pan);
+                double waiNeiPan = AndroidUtils.chuFa(Double.parseDouble(bean.wai_num), Double.parseDouble(bean.nei_num), 5);
+                tv_wainei_pan.setText(waiNeiPan+"");
+
+
+                TextView tv_price_change_percent = holder.getTextView(R.id.tv_price_change_percent);
+                holder.setText(R.id.tv_price_change_percent,bean.change_price_percent+"%");
+
+                TextView tv_price_change = holder.getTextView(R.id.tv_price_change);
+                holder.setText(R.id.tv_price_change,bean.change_price+"");
+
+                if(waiNeiPan>1){
+                    tv_wainei_pan.setTextColor(ContextCompat.getColor(mContext,R.color.red_gp));
+                }else if(waiNeiPan<1){
+                    tv_wainei_pan.setTextColor(ContextCompat.getColor(mContext,R.color.green_gp));
+                }else{
+                    tv_wainei_pan.setTextColor(ContextCompat.getColor(mContext,R.color.gray_66));
+                }
+
+                if(bean.change_price_percent>0){
+                    tv_price.setTextColor(ContextCompat.getColor(mContext,R.color.red_gp));
+                    tv_price_change_percent.setTextColor(ContextCompat.getColor(mContext,R.color.red_gp));
+                    tv_price_change.setTextColor(ContextCompat.getColor(mContext,R.color.red_gp));
+                }else if(bean.change_price_percent<0){
+                    tv_price.setTextColor(ContextCompat.getColor(mContext,R.color.green_gp));
+                    tv_price_change_percent.setTextColor(ContextCompat.getColor(mContext,R.color.green_gp));
+                    tv_price_change.setTextColor(ContextCompat.getColor(mContext,R.color.green_gp));
+                }else{
+                    tv_price.setTextColor(ContextCompat.getColor(mContext,R.color.gray_66));
+                    tv_price_change_percent.setTextColor(ContextCompat.getColor(mContext,R.color.gray_66));
+                    tv_price_change.setTextColor(ContextCompat.getColor(mContext,R.color.gray_66));
+                }
+
+            }
+        };
+        adapter.setOnLoadMoreListener(this);
+        rv_all_gp.setAdapter(adapter);
     }
 
     @Override
     protected void initData() {
-//        showProgress();
-        showContent();
-        //添加当天数据
-        addTodayData();
-//        getData(1,false);
-
+        showProgress();
+        getData(1,false);
     }
 
-    private void addTodayData() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        Log("==="+hour+":"+minute);
-        String isSaveTodayData = SPUtils.getString(mContext, AppXml.isSaveTodayData,"");
-        String dateToString = DateUtils.dateToString(new Date());
-        if(!dateToString.equals(isSaveTodayData)){
-            if(hour>15||(hour==15&&minute>2)){
-                addDataToTable();
-            }
-        }
-
-        addDataToTable();
-
-    }
-
-    private void addDataToTable() {
-        selectData();
-    }
-    private void selectData() {
-        initDialog();
-        RXStart(new IOCallBack<String>() {
+    @Override
+    protected void getData(final int page,final boolean isLoad) {
+        super.getData(page, isLoad);
+        RXStart(pl_load, new IOCallBack<List<GpBean>>() {
             @Override
-            public void call(final FlowableEmitter<String> emitter) {
-                List<GpBean> list = mDaoImp.selectGpBean(1, true);
-                Log("===size"+list.size());
-                final int count=list.size();
-                for (int i = 0; i < count; i++) {
-                    String obj = ApiRequest.getDataTongBu(list.get(i).code, list.get(i).type);
-                    if(obj!=null&&obj.indexOf("v_pv_none_match")==-1){
-                        GpBean bean = BaseGP.formatStr(obj);
-                        //修改code表的name
-                        bean.type=list.get(i).type;
-                        bean.uid=System.nanoTime()+"";
-                        bean.gp_uid=list.get(i)._id;
-                        bean.update_time=new Date().getTime();
-                        bean.create_time=new Date().getTime();
-
-                        bean.gp_year= CalendarUtil.getYear();
-                        bean.gp_month=CalendarUtil.getMonth();
-                        bean.gp_day=CalendarUtil.getDay();
-
-                        long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
-                        Log("==addDataToTable="+l);
-                    }
-                    int progress=i+1;
-                    emitter.onNext(progress+"/"+count);
-                }
+            public void call(FlowableEmitter<List<GpBean>> emitter) {
+                List<GpBean> list = mDaoImp.selectEveryDay(page, null, true);
+                emitter.onNext(list);
                 emitter.onComplete();
             }
             @Override
-            public void onMyNext(String msg) {
-//                showMsg(msg);
-                tv_updatedata_progress.setText(msg);
-            }
-            @Override
-            public void onMyCompleted() {
-                super.onMyCompleted();
-                myDialog.dismiss();
-            }
-
-            @Override
-            public void onMyError(Throwable e) {
-                super.onMyError(e);
-                showMsg("修改失败");
-                myDialog.dismiss();
+            public void onMyNext(List<GpBean> list) {
+                if(isLoad){
+                    pageNum++;
+                    adapter.addList(list,true);
+                }else{
+                    pageNum=2;
+                    adapter.setList(list,true);
+                }
             }
         });
-    }
-    @Override
-    protected void getData(int page, boolean isLoad) {
-        super.getData(page, isLoad);
     }
 
     @Override

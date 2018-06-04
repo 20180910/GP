@@ -84,7 +84,7 @@ public class BaseGP {
 
         return bean;
     }
-    private static float toFloat(String data){
+    public static float toFloat(String data){
         if(TextUtils.isEmpty(data)){
             Log.e("toFloat","===" + Float.parseFloat("0"));
             return Float.parseFloat("0");

@@ -349,7 +349,9 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         mDialog.setTitle("添加数据进度");
         View view = getLayoutInflater().inflate(R.layout.adddata_popu, null);
         tv_adddata_progress = view.findViewById(R.id.tv_adddata_progress);
+        tv_adddata_progress.setVisibility(View.INVISIBLE);
         tv_updatedata_progress = view.findViewById(R.id.tv_updatedata_progress);
+        tv_updatedata_progress.setVisibility(View.INVISIBLE);
         mDialog.setContentView(view);
         mDialog.setPositiveButton(new DialogInterface.OnClickListener() {
             @Override
