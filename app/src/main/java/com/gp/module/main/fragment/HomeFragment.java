@@ -1,5 +1,6 @@
 package com.gp.module.main.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import com.github.androidtools.inter.MyOnClickListener;
 import com.github.baseclass.adapter.MyLoadMoreAdapter;
 import com.github.baseclass.adapter.MyRecyclerViewHolder;
+import com.github.baseclass.view.MyDialog;
 import com.github.rxbus.RxBus;
 import com.gp.Constant;
 import com.gp.R;
@@ -111,7 +113,33 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                 holder.getView(R.id.ll_join_zx).setOnClickListener(new MyOnClickListener() {
                     @Override
                     protected void onNoDoubleClick(View view) {
-                        joinZiXuan(bean.code);
+                        if(getArguments().getInt(Constant.ziXuanFlag,0)==0){
+                            joinZiXuan(bean.code);
+                        }
+                    }
+                });
+                holder.getView(R.id.ll_join_zx).setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if(getArguments().getInt(Constant.ziXuanFlag,0)==1){
+                            MyDialog.Builder mDialog=new MyDialog.Builder(mContext);
+                            mDialog.setMessage("是否删除自选?");
+                            mDialog.setNegativeButton(new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            mDialog.setPositiveButton(new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    joinZiXuan(bean.code);
+                                }
+                            });
+                            mDialog.create().show();
+                        }
+                        return true;
                     }
                 });
 
