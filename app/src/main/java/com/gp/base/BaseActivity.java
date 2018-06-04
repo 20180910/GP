@@ -356,7 +356,7 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         mDialog.setPositiveButton(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+//                dialog.dismiss();
             }
         });
         myDialog = mDialog.create();

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.gp.base.BaseDaoImp;
 import com.gp.database.DBConstant;
@@ -463,6 +464,14 @@ public class HomeImp extends BaseDaoImp {
         return list;
     }
 
+    public long selectTodayDataCount(String code,int year,int month,int day) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String sql="select "+DBConstant._id+" from " + DBManager.T_Everyday+" where "+DBConstant.code+"= ? and "+DBConstant.gp_year+"= ? and "+DBConstant.gp_month+"= ? and "+DBConstant.gp_day+"= ?";
+        Log.i(TAG+"###===","==sql="+sql);
+        Cursor cursor = db.rawQuery(sql, new String[]{code,year+"",month+"",day+""});
+        int count = cursor.getCount();
+        return count;
+    }
     public long joinZiXuan(String uid) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();

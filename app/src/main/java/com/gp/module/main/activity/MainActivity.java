@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -185,7 +186,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
     @Override
     protected void initData() {
         boolean isFirstIntoApp = SPUtils.getBoolean(mContext, AppXml.isFirstIntoApp, true);
-        if (true) {
+        if (isFirstIntoApp) {
             SPUtils.setPrefBoolean(mContext, AppXml.isFirstIntoApp, false);
             addGPData();
         } else {
@@ -203,15 +204,20 @@ public class MainActivity extends BaseActivity<HomeImp> {
             if (hour > 15 || (hour == 15 && minute > 2)) {
                 addTodayData();
             } else {
-                myDialog.dismiss();
+                dialogDismiss();
                 addHomeFragment();
             }
         } else {
-            myDialog.dismiss();
+            dialogDismiss();
             addHomeFragment();
         }
+        addTodayData();
     }
-
+    public void dialogDismiss(){
+        if(myDialog!=null){
+            myDialog.dismiss();
+        }
+    }
     //添加当天数据
     private void addTodayData() {
         if (myDialog == null) {
@@ -238,8 +244,14 @@ public class MainActivity extends BaseActivity<HomeImp> {
                         bean.gp_month = CalendarUtil.getMonth();
                         bean.gp_day = CalendarUtil.getDay();
 
-                        long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
-                        Log("==addDataToTable=" + l);
+
+                        long todayDataCount = mDaoImp.selectTodayDataCount(bean.code,bean.gp_year, bean.gp_month, bean.gp_day);
+                        if(todayDataCount==0){
+                            long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
+                            Log("==addDataToTable=" + l);
+                        }
+                    }else{
+                        Log.i(TAG+"##===","===code2:"+list.get(i).code);
                     }
                     int progress = i + 1;
                     emitter.onNext(progress + "/" + count);
@@ -258,6 +270,8 @@ public class MainActivity extends BaseActivity<HomeImp> {
             public void onMyCompleted() {
                 super.onMyCompleted();
                 myDialog.dismiss();
+                String dateToString = DateUtils.dateToString(new Date());
+                SPUtils.setPrefString(mContext, AppXml.isSaveTodayData, dateToString);
                 addHomeFragment();
             }
 
@@ -282,8 +296,8 @@ public class MainActivity extends BaseActivity<HomeImp> {
                 int count = sh.size() + sz.size();
                 int scaleNum = 0;
                 int[] obj;
-//                for (int i = 0; i < sh.size(); i++) {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < sh.size(); i++) {
+//                for (int i = 0; i < 10; i++) {
                     scaleNum++;
                     obj = new int[2];
                     obj[0] = scaleNum;
@@ -292,13 +306,13 @@ public class MainActivity extends BaseActivity<HomeImp> {
 //                    mDaoImp.addGP(sh.get(i), DBConstant.type_6);
                     emitter.onNext(obj);
                 }
-//                for (int i = 0; i < sz.size(); i++) {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < sz.size(); i++) {
+//                for (int i = 0; i < 10; i++) {
                     scaleNum++;
                     obj = new int[2];
                     obj[0] = scaleNum;
                     obj[1] = count;
-                    addCodeData(sh.get(i), DBConstant.type_0);
+                    addCodeData(sz.get(i), DBConstant.type_0);
 //                    long result = mDaoImp.addGP(sz.get(i), DBConstant.type_0);
                     emitter.onNext(obj);
                 }
@@ -332,6 +346,8 @@ public class MainActivity extends BaseActivity<HomeImp> {
             GpBean bean = BaseGP.formatStr(obj);
             //修改code表的name
             long l = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
+        }else{
+            Log.i(TAG+"###===","===code:"+code);
         }
     }
 
