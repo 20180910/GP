@@ -1,6 +1,5 @@
 package com.gp.module.main.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -8,14 +7,22 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.github.androidtools.SPUtils;
 import com.github.androidtools.inter.MyOnClickListener;
 import com.github.customview.MyRadioButton;
+import com.gp.AppXml;
 import com.gp.Constant;
 import com.gp.R;
 import com.gp.base.BaseActivity;
+import com.gp.base.BaseGP;
+import com.gp.base.IOCallBack;
+import com.gp.database.DBConstant;
+import com.gp.module.main.bean.GpBean;
+import com.gp.module.main.dao.HomeImp;
 import com.gp.module.main.fragment.HomeFragment;
 import com.gp.module.main.fragment.MyFragment;
-import com.gp.module.main.fragment.OrderTypeFragment;
+import com.gp.module.main.fragment.ZiXuanFragment;
+import com.gp.module.main.network.ApiRequest;
 import com.gp.tools.CopyFile;
 import com.gp.tools.StreamUtils;
 
@@ -23,10 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.OnClick;
+import io.reactivex.FlowableEmitter;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity<HomeImp> {
     HomeFragment homeFragment;
-    OrderTypeFragment orderTypeFragment;
+    ZiXuanFragment ziXuanFragment;
     MyFragment myFragment;
 
     @BindView(R.id.fl_content)
@@ -51,69 +60,16 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+        setAppRightTitle("复制文件");
+//        addHomeFragment();
+        hiddenBackIcon();
+    }
+
+    public void addHomeFragment(){
         homeFragment = new HomeFragment();
         addFragment(R.id.fl_content, homeFragment);
         setTabClickListener();
-//        sz();
-//        sh();
     }
-    private void sz() {
-        String code = StreamUtils.get(this, R.raw.sz);
-        Log("==code="+code.indexOf(""));
-        String sz = code.substring(code.indexOf("sz"), code.indexOf(".html"));
-        Log("==code=="+sz);
-        Log("==code==="+subString(code,"sz",".html"));
-        List<String> list=new ArrayList<>();
-        while (code.lastIndexOf(".html")-code.lastIndexOf("sz")>2){
-            String string = subString(code, "sz", ".html");
-            list.add(string);
-            code=code.replace(string,"").replace(" ","").replace("sz.html","");
-            Log("#==="+string);
-        }
-        Log("#==size="+list.size());
-        Log("#==="+list.get(0));
-        Log("#==="+list.get(list.size()-1));
-    }
-    private void sh() {
-        String code = StreamUtils.get(this, R.raw.sh);
-        Log("==code="+code.indexOf(""));
-        String sh = code.substring(code.indexOf("sh"), code.indexOf(".html"));
-        Log("==code=="+sh);
-        Log("==code==="+subString(code,"sh",".html"));
-        List<String> list=new ArrayList<>();
-        while (code.lastIndexOf(".html")-code.lastIndexOf("sh")>2){
-            String string = subString(code, "sh", ".html");
-            list.add(string);
-            code=code.replace(string,"").replace(" ","").replace("sh.html","");
-            Log("#==="+string);
-        }
-        Log("#==size="+list.size());
-        Log("#==="+list.get(0));
-        Log("#==="+list.get(list.size()-1));
-    }
-
-    public static String subString(String str, String strStart, String strEnd) {
-        /* 找出指定的2个字符在 该字符串里面的 位置 */
-        int strStartIndex = str.indexOf(strStart);
-        int strEndIndex = str.indexOf(strEnd);
-
-        /* index 为负数 即表示该字符串中 没有该字符 */
-        if (strStartIndex < 0) {
-            return "字符串 :---->" + str + "<---- 中不存在 " + strStart + ", 无法截取目标字符串";
-        }
-        if (strEndIndex < 0) {
-            return "字符串 :---->" + str + "<---- 中不存在 " + strEnd + ", 无法截取目标字符串";
-        }
-        /* 开始截取 */
-        String result = str.substring(strStartIndex+2, strEndIndex);
-        return result;
-    }
-    public String splitData(String str, String strStart, String strEnd) {
-        String tempStr;
-        tempStr = str.substring(str.indexOf(strStart) + 1, str.lastIndexOf(strEnd));
-        return tempStr;
-    }
-
 
     private void setTabClickListener() {
         selectView = rb_home_tab1;
@@ -122,9 +78,6 @@ public class MainActivity extends BaseActivity {
         rb_home_tab3.setOnClickListener(getTabClickListener(3));
 
     }
-
-
-
     @NonNull
     private MyOnClickListener getTabClickListener(final int index) {
         return new MyOnClickListener() {
@@ -139,25 +92,181 @@ public class MainActivity extends BaseActivity {
                         break;
                     case 3:
                             selectMy();
-                            copeFile();
                         break;
                 }
             }
-            private void copeFile() {
+
+        };
+    }
+    private void copeFile() {
+        showLoading();
+        RXStart(new IOCallBack<Integer>() {
+            @Override
+            public void call(FlowableEmitter<Integer> emitter) {
                 String pathDatabase=mContext.getDatabasePath("MyGP").getPath();
                 System.out.println("path="+pathDatabase);
                 String newPath= Environment.getExternalStorageDirectory().getAbsolutePath() + "/"+ Constant.rootFileName+"/" + "MyGP"+System.currentTimeMillis();
 
                 int copy = CopyFile.copySdcardFile(pathDatabase, newPath);
                 System.out.println("path=="+copy);
+                emitter.onNext(copy);
+                emitter.onComplete();
             }
-        };
+            @Override
+            public void onMyNext(Integer obj) {
+                showMsg(obj==-1?"复制失败":"复制成功");
+            }
+            @Override
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                dismissLoading();
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                dismissLoading();
+            }
+        });
+
     }
     @Override
     protected void initRxBus() {
         super.initRxBus();
+    }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
 
+    }
+
+    @Override
+    protected void initData() {
+        boolean isFirstIntoApp = SPUtils.getBoolean(mContext, AppXml.isFirstIntoApp, true);
+        if(true){
+            SPUtils.setPrefBoolean(mContext,AppXml.isFirstIntoApp,false);
+            addGPData();
+        }else{
+            addHomeFragment();
+        }
+    }
+    public void addGPData(){
+        initDialog();
+        RXStart(pl_load,new IOCallBack<int[]>() {
+            @Override
+            public void call(FlowableEmitter<int[]> emitter) {
+                mDaoImp.deleteTableCode();
+                List<String> sh = sh();
+                List<String> sz = sz();
+                int count=sh.size()+sz.size();
+                int scaleNum=0;
+                int[] obj;
+//                for (int i = 0; i < sh.size(); i++) {
+                for (int i = 0; i < 20; i++) {
+                    scaleNum++;
+                    obj=new int[2];
+                    obj[0]=scaleNum;
+                    obj[1]=count;
+
+                    mDaoImp.addGP(sh.get(i), DBConstant.type_6);
+
+                    emitter.onNext(obj);
+                }
+//                for (int i = 0; i < sz.size(); i++) {
+                for (int i = 0; i < 20; i++) {
+                    scaleNum++;
+                    obj=new int[2];
+                    obj[0]=scaleNum;
+                    obj[1]=count;
+
+                    long result = mDaoImp.addGP(sz.get(i), DBConstant.type_0);
+                    Log("==result="+result);
+
+                    emitter.onNext(obj);
+                }
+                emitter.onComplete();
+            }
+
+            @Override
+            public void onMyNext(int[] obj) {
+//                showMsg(obj[0]+"/"+obj[1]);
+                tv_adddata_progress.setText(obj[0]+"/"+obj[1]);
+            }
+            @Override
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                selectData();
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                myDialog.dismiss();
+                showMsg("添加失败");
+            }
+        });
+    }
+    private void selectData() {
+        RXStart(new IOCallBack<String>() {
+            @Override
+            public void call(final FlowableEmitter<String> emitter) {
+                List<GpBean> list = mDaoImp.selectGpBean(1, true);
+                Log("===size"+list.size());
+                final int count=list.size();
+                for (int i = 0; i < count; i++) {
+                    String obj = ApiRequest.getDataTongBu(list.get(i).code, list.get(i).type);
+                    if(obj!=null&&obj.indexOf("v_pv_none_match")==-1){
+                        GpBean bean = BaseGP.formatStr(obj);
+                        //修改code表的name
+                        long l = mDaoImp.updateGpBean(bean);
+                    }
+                    int progress=i+1;
+                    emitter.onNext(progress+"/"+count);
+                }
+                emitter.onComplete();
+            }
+            @Override
+            public void onMyNext(String msg) {
+//                showMsg(msg);
+                tv_updatedata_progress.setText(msg);
+            }
+            @Override
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                myDialog.dismiss();
+                addHomeFragment();
+            }
+
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                showMsg("修改失败");
+                myDialog.dismiss();
+            }
+        });
+    }
+    private List sz() {
+        String code = StreamUtils.get(mContext, R.raw.sz);
+        String sz = code.substring(code.indexOf("sz"), code.indexOf(".html"));
+        List<String> list=new ArrayList<>();
+        while (code.lastIndexOf(".html")-code.lastIndexOf("sz")>2){
+            String string = subString(code, "sz", ".html");
+            list.add(string);
+            code=code.replace(string,"").replace(" ","").replace("sz.html","");
+        }
+        Log("#==size="+list.size());
+        return list;
+    }
+    private List sh() {
+        String code = StreamUtils.get(mContext, R.raw.sh);
+        List<String> list=new ArrayList<>();
+        while (code.lastIndexOf(".html")-code.lastIndexOf("sh")>2){
+            String string = subString(code, "sh", ".html");
+            list.add(string);
+            code=code.replace(string,"").replace(" ","").replace("sh.html","");
+        }
+        Log("#==size="+list.size());
+        return list;
     }
 
     private void selectHome() {
@@ -171,7 +280,7 @@ public class MainActivity extends BaseActivity {
         } else {
             showFragment(homeFragment);
         }
-        hideFragment(orderTypeFragment);
+        hideFragment(ziXuanFragment);
         hideFragment(myFragment);
     }
 
@@ -180,11 +289,11 @@ public class MainActivity extends BaseActivity {
             return;
         }
         selectView = rb_home_tab2;
-        if (orderTypeFragment == null) {
-            orderTypeFragment = new OrderTypeFragment();
-            addFragment(R.id.fl_content, orderTypeFragment);
+        if (ziXuanFragment == null) {
+            ziXuanFragment = new ZiXuanFragment();
+            addFragment(R.id.fl_content, ziXuanFragment);
         } else {
-            showFragment(orderTypeFragment);
+            showFragment(ziXuanFragment);
         }
         hideFragment(homeFragment);
         hideFragment(myFragment);
@@ -202,39 +311,21 @@ public class MainActivity extends BaseActivity {
             showFragment(myFragment);
         }
         hideFragment(homeFragment);
-        hideFragment(orderTypeFragment);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-
-    }
-
-    @Override
-    protected void initData() {
+        hideFragment(ziXuanFragment);
     }
 
 
 
-
-
-
-
-
-
+    @OnClick({R.id.app_right_tv})
     protected void onViewClick(View v) {
         switch (v.getId()) {
-
+            case R.id.app_right_tv:
+                copeFile();
+                break;
         }
     }
 
-
-
-
     private long mExitTime;
-
     @Override
     public void onBackPressed() {
         if ((System.currentTimeMillis() - mExitTime) > 1500) {
@@ -243,5 +334,21 @@ public class MainActivity extends BaseActivity {
         } else {
             super.onBackPressed();
         }
+    }
+    public static String subString(String str, String strStart, String strEnd) {
+        /* 找出指定的2个字符在 该字符串里面的 位置 */
+        int strStartIndex = str.indexOf(strStart);
+        int strEndIndex = str.indexOf(strEnd);
+
+        /* index 为负数 即表示该字符串中 没有该字符 */
+        if (strStartIndex < 0) {
+            return "字符串 :---->" + str + "<---- 中不存在 " + strStart + ", 无法截取目标字符串";
+        }
+        if (strEndIndex < 0) {
+            return "字符串 :---->" + str + "<---- 中不存在 " + strEnd + ", 无法截取目标字符串";
+        }
+        /* 开始截取 */
+        String result = str.substring(strStartIndex+2, strEndIndex);
+        return result;
     }
 }

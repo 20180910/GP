@@ -1,14 +1,18 @@
 package com.gp.base;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
+import android.widget.TextView;
 
 import com.github.androidtools.SPUtils;
 import com.github.baseclass.view.Loading;
+import com.github.baseclass.view.MyDialog;
 import com.github.rxbus.MyConsumer;
 import com.github.rxbus.MyDisposable;
 import com.github.rxbus.RxBus;
@@ -18,6 +22,7 @@ import com.gp.AppXml;
 import com.gp.Config;
 import com.gp.Constant;
 import com.gp.GetSign;
+import com.gp.R;
 import com.library.base.MyBaseFragment;
 import com.library.base.ProgressLayout;
 
@@ -230,5 +235,26 @@ public abstract class BaseFragment<I extends BaseDaoImp> extends MyBaseFragment 
             Rx.cancelSubscription(ioSet);
         }
     }
+
+    protected TextView tv_adddata_progress;
+    protected TextView tv_updatedata_progress;
+    protected MyDialog myDialog;
+    protected void initDialog(){
+        final MyDialog.Builder mDialog = new MyDialog.Builder(mContext);
+        mDialog.setTitle("添加数据进度");
+        View view = getLayoutInflater().inflate(R.layout.adddata_popu, null);
+        tv_adddata_progress = view.findViewById(R.id.tv_adddata_progress);
+        tv_updatedata_progress = view.findViewById(R.id.tv_updatedata_progress);
+        mDialog.setContentView(view);
+        mDialog.setPositiveButton(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        myDialog = mDialog.create();
+        myDialog.show();
+    }
+
 
 }

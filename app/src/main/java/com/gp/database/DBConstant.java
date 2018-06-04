@@ -12,6 +12,7 @@ public class DBConstant {
     public static final String create_time ="create_time";
     public static final String update_time ="update_time";
     public static final String type ="type";
+    public static final String status ="status";
     public static final String gp_year ="gp_year";
     public static final String gp_month ="gp_month";
     public static final String gp_day ="gp_day";

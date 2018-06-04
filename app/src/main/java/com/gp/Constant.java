@@ -6,6 +6,8 @@ package com.gp;
 
 public class Constant {
     public static final int pageSize=30;
+    public static final int sz_0=0;
+    public static final int sh_6=6;
     public static final String title="title";
     public static final String url="url";
     public static final String registrationId="registrationId";

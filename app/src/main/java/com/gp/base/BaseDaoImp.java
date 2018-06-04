@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.github.androidtools.DateUtils;
 import com.gp.database.DBConstant;
@@ -70,5 +71,9 @@ public abstract class BaseDaoImp {
     }
     public int selectTableCount(String tableName) {
         return selectTableCount(tableName,null);
+    }
+
+    public void Log(String msg) {
+        Log.i(TAG, msg);
     }
 }

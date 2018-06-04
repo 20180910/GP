@@ -9,7 +9,7 @@ import com.gp.base.BaseFragment;
  * Created by Administrator on 2018/5/31.
  */
 
-public class OrderTypeFragment extends BaseFragment {
+public class ZiXuanFragment extends BaseFragment {
     @Override
     protected int getContentView() {
         return R.layout._2frag;
@@ -22,6 +22,7 @@ public class OrderTypeFragment extends BaseFragment {
 
     @Override
     protected void initData() {
+        showContent();
 
     }
 

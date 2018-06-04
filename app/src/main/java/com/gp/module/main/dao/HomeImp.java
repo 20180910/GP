@@ -19,14 +19,14 @@ import java.util.List;
  */
 
 public class HomeImp extends BaseDaoImp {
-    public boolean deleteAccount(int id) {
+    private boolean deleteAccount(int id) {
         SQLiteDatabase db = getWritableDatabase();
         int delete = db.delete(DBManager.T_Code, DBConstant._id + "=?", new String[]{id + ""});
         db.close();
         return delete > 0 ? true : false;
     }
 
-    public boolean deleteAccount(List<String> idList) {
+    private boolean deleteAccount(List<String> idList) {
         SQLiteDatabase db = getWritableDatabase();
         try {
             db.beginTransaction();
@@ -58,6 +58,7 @@ public class HomeImp extends BaseDaoImp {
         values.put(DBConstant.update_time,new Date().getTime());
         values.put(DBConstant.create_time,new Date().getTime());
         values.put(DBConstant.type,type);
+        values.put(DBConstant.status,"0");
 
         long insert = db.insert(DBManager.T_Code, null, values);
         db.close();
@@ -95,7 +96,8 @@ public class HomeImp extends BaseDaoImp {
                         DBConstant.gpstr,
                         DBConstant.name,
                         DBConstant.code,
-                        DBConstant.type
+                        DBConstant.type,
+                        DBConstant.status
                         }, searchSql!=null?searchSql.toString():null,searchSql!=null?searchStr:null, null, null, orderBy,selectAll?null:limit);
         List<GpBean> list = new ArrayList<GpBean>();
         GpBean bean;
@@ -109,6 +111,7 @@ public class HomeImp extends BaseDaoImp {
             String  name= query.getString(query.getColumnIndex(DBConstant.name));
             String code = query.getString(query.getColumnIndex(DBConstant.code));
             int type = query.getInt(query.getColumnIndex(DBConstant.type));
+            int status = query.getInt(query.getColumnIndex(DBConstant.status));
 
 //            long updateTime = string2Date(query.getString(query.getColumnIndex(DBConstant.updateTime)));
 //            long creatTime = string2Date(query.getString(query.getColumnIndex(DBConstant.createTime)));
@@ -120,6 +123,7 @@ public class HomeImp extends BaseDaoImp {
             bean.name=name;
             bean.code=code;
             bean.type=type;
+            bean.status=status;
 
             list.add(bean);
         }
@@ -138,6 +142,88 @@ public class HomeImp extends BaseDaoImp {
 //        values.put(DBConstant.code,  bean.code);
 //        values.put(DBConstant.type,  bean.type);
         long insert = db.update(DBManager.T_Code, values, DBConstant.code + " =? ", new String[]{bean.code + ""});
+        db.close();
+        return insert;
+    }
+
+    public int deleteTableCode() {
+        SQLiteDatabase db = getWritableDatabase();
+        int delete = db.delete(DBManager.T_Code,null,null);
+        db.close();
+        Log("==delete=="+delete);
+        return delete;
+    }
+
+    public long addDataToTable(GpBean bean,String tableName) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+//        values.put(DBConstant._id             ,bean._id             );
+        values.put(DBConstant.uid              ,bean.uid             +"");
+        values.put(DBConstant.gp_uid           ,bean.gp_uid          +"");
+        values.put(DBConstant.create_time     ,bean.create_time     +"");
+        values.put(DBConstant.update_time     ,bean.update_time     +"");
+        values.put(DBConstant.type             ,bean.type            +"");
+        values.put(DBConstant.gp_year          ,bean.gp_year         +"");
+        values.put(DBConstant.gp_month        ,bean.gp_month        +"");
+        values.put(DBConstant.gp_day          ,bean.gp_day          +"");
+        values.put(DBConstant.gpstr          ,bean.gpstr          +"");
+        values.put(DBConstant.name           ,bean.name           +"");
+        values.put(DBConstant.code           ,bean.code           +"");
+        values.put(DBConstant.now_price      ,bean.now_price      +"");
+        values.put(DBConstant.zuo_price      ,bean.zuo_price      +"");
+        values.put(DBConstant.jin_price      ,bean.jin_price      +"");
+        values.put(DBConstant.total_volume   ,bean.total_volume   +"");
+        values.put(DBConstant.wai_num        ,bean.wai_num        +"");
+        values.put(DBConstant.nei_num        ,bean.nei_num        +"");
+        values.put(DBConstant.buy_price      ,bean.buy_price      +"");
+        values.put(DBConstant.buy_volume     ,bean.buy_volume     +"");
+        values.put(DBConstant.buy2_price     ,bean.buy2_price     +"");
+        values.put(DBConstant.buy2_volume    ,bean.buy2_volume    +"");
+        values.put(DBConstant.buy3_price     ,bean.buy3_price     +"");
+        values.put(DBConstant.buy3_volume    ,bean.buy3_volume    +"");
+        values.put(DBConstant.buy4_price     ,bean.buy4_price     +"");
+        values.put(DBConstant.buy4_volume    ,bean.buy4_volume    +"");
+        values.put(DBConstant.buy5_price     ,bean.buy5_price     +"");
+        values.put(DBConstant.buy5_volume    ,bean.buy5_volume    +"");
+        values.put(DBConstant.sell_price     ,bean.sell_price     +"");
+        values.put(DBConstant.sell_volume    ,bean.sell_volume    +"");
+        values.put(DBConstant.sell2_price    ,bean.sell2_price    +"");
+        values.put(DBConstant.sell2_volume   ,bean.sell2_volume+""   +"");
+        values.put(DBConstant.sell3_price    ,bean.sell3_price    +"");
+        values.put(DBConstant.sell3_volume   ,bean.sell3_volume   +"");
+        values.put(DBConstant.sell4_price    ,bean.sell4_price    +"");
+        values.put(DBConstant.sell4_volume   ,bean.sell4_volume   +"");
+        values.put(DBConstant.sell5_price    ,bean.sell5_price    +"");
+        values.put(DBConstant.sell5_volume   ,bean.sell5_volume   +"");
+        values.put(DBConstant.recent_trade   ,bean.recent_trade   +"");
+        values.put(DBConstant.recent_time    ,bean.recent_time    +"");
+        values.put(DBConstant.change_price   ,bean.change_price   +"");
+        values.put(DBConstant.change_price_percent ,bean.change_price_percent +"");
+        values.put(DBConstant.max_price            ,bean.max_price            +"");
+        values.put(DBConstant.min_price            ,bean.min_price            +"");
+        values.put(DBConstant.last_price           ,bean.last_price           +"");
+        values.put(DBConstant.last_volume_num      ,bean.last_volume_num      +"");
+        values.put(DBConstant.last_volume_price    ,bean.last_volume_price    +"");
+        values.put(DBConstant.huan_shou_lv         ,bean.huan_shou_lv         +"");
+        values.put(DBConstant.shi_ying_lv_ttm      ,bean.shi_ying_lv_ttm      +"");
+        values.put(DBConstant.ziduan1              ,bean.ziduan1              +"");
+        values.put(DBConstant.max_price2           ,bean.max_price2           +"");
+        values.put(DBConstant.min_price2           ,bean.min_price2           +"");
+        values.put(DBConstant.zhen_fu              ,bean.zhen_fu              +"");
+        values.put(DBConstant.liutong_shizhi       ,bean.liutong_shizhi       +"");
+        values.put(DBConstant.total_shizhi         ,bean.total_shizhi         +"");
+        values.put(DBConstant.shi_jing_lv          ,bean.shi_jing_lv          +"");
+        values.put(DBConstant.top_price            ,bean.top_price            +"");
+        values.put(DBConstant.bottom_price         ,bean.bottom_price         +"");
+        values.put(DBConstant.liang_bi             ,bean.liang_bi             +"");
+        values.put(DBConstant.ziduan2              ,bean.ziduan2              +"");
+        values.put(DBConstant.average_price        ,bean.average_price        +"");
+        values.put(DBConstant.shi_ying_lv_dong     ,bean.shi_ying_lv_dong     +"");
+        values.put(DBConstant.shi_ying_lv_jing     ,bean.shi_ying_lv_jing     +"");
+
+
+        long insert = db.insert(tableName, null, values);
         db.close();
         return insert;
     }

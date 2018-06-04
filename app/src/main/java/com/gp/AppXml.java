@@ -5,8 +5,8 @@ package com.gp;
  */
 
 public class AppXml {
-    public static final String userHasPhone = "userHasPhone";
-    public static final String liuXueImg = "liuXueImg";
+    public static final String isFirstIntoApp = "isFirstIntoApp";
+    public static final String isSaveTodayData = "isSaveTodayData";
     public static final String youXueImg = "youXueImg";
     public static final String user_id = "user_id";
     public static final String mobile = "mobile";
