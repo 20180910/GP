@@ -16,6 +16,7 @@ public class BaseGP {
    public long create_time;
    public long update_time;
    public int type;
+   public int sort;
    public int status;
 
     public static GpBean formatStr(String data){

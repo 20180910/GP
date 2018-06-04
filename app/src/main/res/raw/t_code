@@ -7,5 +7,6 @@ gpstr           varchar(255) ,--  分割字符串中内容，下标从0开始，
 name            varchar(255) ,--  1: 名字                        五 粮 液
 code            varchar(255) not null,--  2: 代码                        000858
 type            INTEGER not null,        --0深圳，6上海
+sort            INTEGER      default 900 ,
 status          INTEGER default 0        --1加入自选
 )

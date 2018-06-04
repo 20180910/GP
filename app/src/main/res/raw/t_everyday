@@ -6,6 +6,7 @@ create_time             varchar(255) not null,
 update_time             varchar(255) not null,
 type                    INTEGER      not null,       --0深圳，6上海
 status                  INTEGER      default 0 ,
+sort                  INTEGER      default 900 ,
 gp_year                 INTEGER(255) not null,
 gp_month                INTEGER(255) not null,
 gp_day                  INTEGER(255) not null,

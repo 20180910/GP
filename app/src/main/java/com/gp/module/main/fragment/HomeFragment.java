@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import com.github.androidtools.inter.MyOnClickListener;
 import com.github.baseclass.adapter.MyLoadMoreAdapter;
 import com.github.baseclass.adapter.MyRecyclerViewHolder;
 import com.gp.R;
@@ -36,7 +37,7 @@ public class HomeFragment extends BaseFragment<HomeImp> {
     protected void initView() {
         adapter=new MyLoadMoreAdapter<GpBean>(mContext,R.layout.every_day_item,pageSize) {
             @Override
-            public void bindData(MyRecyclerViewHolder holder, int position, GpBean bean) {
+            public void bindData(MyRecyclerViewHolder holder, int position, final GpBean bean) {
                 holder.setText(R.id.tv_name,bean.name);
                 holder.setText(R.id.tv_code,bean.code);
 
@@ -80,10 +81,31 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                     tv_price_change.setTextColor(ContextCompat.getColor(mContext,R.color.gray_66));
                 }
 
+                holder.getView(R.id.ll_join_zx).setOnClickListener(new MyOnClickListener() {
+                    @Override
+                    protected void onNoDoubleClick(View view) {
+                        joinZiXuan(bean.uid);
+                    }
+                });
+
             }
         };
         adapter.setOnLoadMoreListener(this);
         rv_all_gp.setAdapter(adapter);
+    }
+
+    private void joinZiXuan(final String uid) {
+        showLoading();
+        RXStart(new IOCallBack<Boolean>() {
+            @Override
+            public void call(FlowableEmitter<Boolean> emitter) {
+                mDaoImp.joinZiXuan(uid);
+            }
+            @Override
+            public void onMyNext(Boolean obj) {
+
+            }
+        });
     }
 
     @Override
