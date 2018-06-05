@@ -29,7 +29,7 @@ public class Constant {
         public static final int exit_login=1000;
         public static final int addHomeworkSuccess=1001;
     }
-    public static final String rootFileName="amynote";
+    public static final String rootFileName="000000";
     public static class IParam{
         public static final String isFirstIntoApp="isFirstIntoApp";
         public static final String isUpdatePwd="isUpdatePwd";
