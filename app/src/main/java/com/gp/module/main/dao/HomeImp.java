@@ -46,7 +46,21 @@ public class HomeImp extends BaseDaoImp {
         return true;
     }
 
-    public long addGP(String code, String str, String name, String type) {
+    public String selectUid(String code, String tableName) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor query = db.rawQuery("select " + DBConstant.uid + " from " + tableName + " where " + DBConstant.code + "=? ", new String[]{code});
+        String uid="";
+        while (query.moveToNext()) {
+            uid = query.getString(query.getColumnIndex(DBConstant.uid));
+        }
+        closeDB(db);
+        Log("selectUid==="+uid);
+        return uid;
+    }
+    private void closeDB(SQLiteDatabase db){
+        db.close();
+    }
+    public boolean addGP(String code, String str, String name, String type) {
 //        Calendar instance = Calendar.getInstance();
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -69,7 +83,7 @@ public class HomeImp extends BaseDaoImp {
 
         long insert = db.insert(DBManager.T_Code, null, values);
         db.close();
-        return insert;
+        return insert>0?true:false;
     }
 
     public List<GpBean> selectGpBean(int page, boolean selectAll) {

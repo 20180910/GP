@@ -62,6 +62,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
 
 
     private LocalBroadcastManager localBroadcastManager;
+    private TimerTask timerTask;
 
     @Override
     protected int getContentView() {
@@ -75,6 +76,10 @@ public class MainActivity extends BaseActivity<HomeImp> {
         hiddenBackIcon();
     }
     private void stopTimer(){
+        if(timerTask!=null){
+            timerTask.cancel();
+            timerTask=null;
+        }
         if(timer!=null){
             timer.cancel();
             timer=null;
@@ -85,16 +90,18 @@ public class MainActivity extends BaseActivity<HomeImp> {
             stopTimer();
         }
         timer = new Timer();
-        timer.schedule(new TimerTask() {
+        timerTask = new TimerTask() {
             @Override
             public void run() {
                 int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
                 int minute = CalendarUtil.get(Calendar.MINUTE);
-                if((hour>=9&&hour<11)||(hour==11&&minute<=30)||(hour>=13&&hour<15)){
+                if ((hour >= 9 && hour < 11) || (hour == 11 && minute <= 30) || (hour >= 13 && hour < 15)) {
                     refreshZiXuan();
                 }
             }
-        },1, periodTime * 1000);
+        };
+        timer.schedule(timerTask,1, periodTime * 1000);
+        timerTask.run();
     }
     private void refreshZiXuan() {
         RXStart(new IOCallBack<Long>() {
@@ -218,6 +225,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
             //收盘之后添加当天数据
             addEveryData();
         }
+        startTimer();
     }
 
     private void addEveryData() {
@@ -372,7 +380,27 @@ public class MainActivity extends BaseActivity<HomeImp> {
         if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
             GpBean bean = BaseGP.formatStr(obj);
             //修改code表的name
-            long l = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
+            boolean result = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
+            if(result){
+                String uid = mDaoImp.selectUid(code, DBManager.T_Code);
+                //如果收盘，第一次打开app就添加当天数据
+                //修改code表的name
+                bean.type = type;
+                bean.uid = System.nanoTime() + "";
+                bean.gp_uid = uid;
+                bean.update_time = new Date().getTime();
+                bean.create_time = new Date().getTime();
+
+                bean.gp_year = CalendarUtil.getYear();
+                bean.gp_month = CalendarUtil.getMonth();
+                bean.gp_day = CalendarUtil.getDay();
+
+                long todayDataCount = mDaoImp.selectTodayDataCount(bean.code,bean.gp_year, bean.gp_month, bean.gp_day);
+                if(todayDataCount==0){
+                    long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
+                    Log("==addDataToTable=" + l);
+                }
+            }
         }else{
             Log.i(TAG+"###===","===code:"+code);
         }
