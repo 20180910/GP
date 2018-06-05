@@ -57,8 +57,31 @@ public class HomeImp extends BaseDaoImp {
         Log("selectUid==="+uid);
         return uid;
     }
+    private void closeCursor(Cursor cursor){
+        if(cursor!=null){
+            cursor.close();
+        }
+    }
     private void closeDB(SQLiteDatabase db){
-        db.close();
+        if(db!=null){
+            db.close();
+        }
+    }
+    private void closeDC(SQLiteDatabase db,Cursor cursor){
+        if(cursor!=null){
+            cursor.close();
+        }
+        if(db!=null){
+            db.close();
+        }
+    }
+    public boolean existCode(String code, String tableName) {
+        SQLiteDatabase db = getWritableDatabase();
+        String sql="select * from "+tableName+" where "+DBConstant.code+"=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{code});
+        int count = cursor.getCount();
+        closeDC(db,cursor);
+        return count>0?true:false;
     }
     public boolean addGP(String code, String str, String name, String type) {
 //        Calendar instance = Calendar.getInstance();

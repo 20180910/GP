@@ -17,6 +17,7 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import com.github.androidtools.ClickUtils;
+import com.github.androidtools.DateUtils;
 import com.github.androidtools.SPUtils;
 import com.github.baseclass.view.Loading;
 import com.github.baseclass.view.MyDialog;
@@ -31,6 +32,7 @@ import com.gp.GetSign;
 import com.gp.R;
 import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.network.ApiRequest;
+import com.gp.tools.CalendarUtil;
 import com.library.base.MyBaseActivity;
 import com.library.base.ProgressLayout;
 import com.library.base.view.MyWebViewClient;
@@ -40,6 +42,8 @@ import org.reactivestreams.Subscription;
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,17 +59,24 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     protected final String TAG = this.getClass().getSimpleName();
     protected final String noLoginCode = "0";
     protected I mDaoImp;
+
+    //    protected K mBiz;
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        pageSize= Constant.pageSize;
-        pagesize= Constant.pageSize;
-        mDaoImp= getDaoImp();
+        pageSize = Constant.pageSize;
+        pagesize = Constant.pageSize;
+        mDaoImp = getDaoImp();
         if (mDaoImp != null) {
             mDaoImp.setContext(this);
         }
+//        mBiz= getBiz();
+//        if(mBiz!=null){
+//            mBiz.setContext(this);
+//        }
         super.onCreate(savedInstanceState);
     }
-    private I getDaoImp(){
+
+    /*private K getBiz(){
         Type genericSuperclass = getClass().getGenericSuperclass();
         if(genericSuperclass instanceof ParameterizedType){
             //参数化类型
@@ -73,19 +84,41 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
             //返回表示此类型实际类型参数的 Type 对象的数组
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             try {
-                mDaoImp=((Class<I>)actualTypeArguments[0]).newInstance();
+                mBiz=((Class<K>)actualTypeArguments[1]).newInstance();
             } catch (java.lang.InstantiationException e) {
-                mDaoImp=null;
+                mBiz=null;
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
-                mDaoImp=null;
+                mBiz=null;
                 e.printStackTrace();
             }
         }else{
-            mDaoImp=null;
+            mBiz=null;
+        }
+        return mBiz;
+    }*/
+    private I getDaoImp() {
+        Type genericSuperclass = getClass().getGenericSuperclass();
+        if (genericSuperclass instanceof ParameterizedType) {
+            //参数化类型
+            ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+            //返回表示此类型实际类型参数的 Type 对象的数组
+            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            try {
+                mDaoImp = ((Class<I>) actualTypeArguments[0]).newInstance();
+            } catch (java.lang.InstantiationException e) {
+                mDaoImp = null;
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                mDaoImp = null;
+                e.printStackTrace();
+            }
+        } else {
+            mDaoImp = null;
         }
         return mDaoImp;
     }
+
     protected String getUserId() {
         return SPUtils.getString(mContext, AppXml.user_id, noLoginCode);
     }
@@ -103,7 +136,7 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     }
 
     public void Log(String msg) {
-        Log.i(TAG + "===", msg);
+        Log.i(TAG, msg);
     }
 
     @Override
@@ -123,7 +156,6 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         super.setAppRightImg(appRightImg);
 
     }
-
 
 
     protected String getSign(Map map) {
@@ -191,7 +223,6 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     }
 
 
-
     Subscription subscription;
 
     public int getAppVersionCode() {
@@ -239,46 +270,53 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     public interface UploadImgCallback {
         void result(String imgUrl);
     }
+
     /*******************************************Rx*************************************************/
-    protected Set eventSet,ioSet;
+    protected Set eventSet, ioSet;
 
     public <T> void RXStart(final IOCallBack<T> callBack) {
-        RXStart(null,false,callBack);
+        RXStart(null, false, callBack);
     }
-    public <T> void RXStart(boolean hiddenLoading,final IOCallBack<T> callBack) {
-        RXStart(null,hiddenLoading,callBack);
+
+    public <T> void RXStart(boolean hiddenLoading, final IOCallBack<T> callBack) {
+        RXStart(null, hiddenLoading, callBack);
     }
+
     public <T> void RXStart(ProgressLayout progressLayout, final IOCallBack<T> callBack) {
-        RXStart(progressLayout,false,callBack);
+        RXStart(progressLayout, false, callBack);
     }
-    public <T> void RXStart(final ProgressLayout progressLayout,final boolean hiddenLoading, final IOCallBack<T> callBack) {
+
+    public <T> void RXStart(final ProgressLayout progressLayout, final boolean hiddenLoading, final IOCallBack<T> callBack) {
         org.reactivestreams.Subscription start = Rx.start(new MyFlowableSubscriber<T>() {
             @Override
             public void subscribe(@NonNull FlowableEmitter<T> emitter) {
                 callBack.call(emitter);
             }
+
             @Override
             public void onNext(T obj) {
                 callBack.onMyNext(obj);
             }
+
             @Override
             public void onComplete() {
                 super.onComplete();
-                if(progressLayout!=null){
+                if (progressLayout != null) {
                     progressLayout.showContent();
                 }
-                if(!hiddenLoading){
+                if (!hiddenLoading) {
                     Loading.dismissLoading();
                 }
                 callBack.onMyCompleted();
             }
+
             @Override
             public void onError(Throwable t) {
                 super.onError(t);
-                if(progressLayout!=null){
+                if (progressLayout != null) {
                     progressLayout.showErrorText();
                 }
-                if(!hiddenLoading){
+                if (!hiddenLoading) {
                     Loading.dismissLoading();
                 }
                 callBack.onMyError(t);
@@ -286,20 +324,22 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         });
         addSubscription(start);
     }
-    public void addSubscription(MyDisposable disposable){
-        if(eventSet==null){
-            eventSet=new HashSet();
+
+    public void addSubscription(MyDisposable disposable) {
+        if (eventSet == null) {
+            eventSet = new HashSet();
         }
         eventSet.add(disposable);
     }
-    public void addSubscription(Subscription subscription){
-        if(ioSet==null){
-            ioSet=new HashSet();
+
+    public void addSubscription(Subscription subscription) {
+        if (ioSet == null) {
+            ioSet = new HashSet();
         }
         ioSet.add(subscription);
     }
 
-    public <T>void getEvent(Class<T> clazz,final EventCallback<T> callback){
+    public <T> void getEvent(Class<T> clazz, final EventCallback<T> callback) {
         MyDisposable event = RxBus.getInstance().getEvent(clazz, new MyConsumer<T>() {
             @Override
             public void onAccept(T event) {
@@ -308,7 +348,8 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         });
         addSubscription(event);
     }
-    public <T>void getEventReplay(Class<T> clazz,final EventCallback<T> callback){
+
+    public <T> void getEventReplay(Class<T> clazz, final EventCallback<T> callback) {
         MyDisposable event = RxBus.getInstance().getEventReplay(clazz, new MyConsumer<T>() {
             @Override
             public void onAccept(T event) {
@@ -319,18 +360,18 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     }
 
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         ClickUtils.clearLastClickTime();
-        if(eventSet!=null){
+        if (eventSet != null) {
             RxBus.getInstance().dispose(eventSet);
         }
         if (ioSet != null) {
             Rx.cancelSubscription(ioSet);
         }
     }
+
     public boolean fileIsExists(String strFile) {
         try {
             File f = new File(strFile);
@@ -346,14 +387,15 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
     protected TextView tv_adddata_progress;
     protected TextView tv_updatedata_progress;
     protected MyDialog myDialog;
-    protected void initDialog(){
+
+    protected void initDialog() {
         final MyDialog.Builder mDialog = new MyDialog.Builder(mContext);
         mDialog.setTitle("添加数据进度");
         View view = getLayoutInflater().inflate(R.layout.adddata_popu, null);
         tv_adddata_progress = view.findViewById(R.id.tv_adddata_progress);
-        tv_adddata_progress.setVisibility(View.INVISIBLE);
+//        tv_adddata_progress.setVisibility(View.INVISIBLE);
         tv_updatedata_progress = view.findViewById(R.id.tv_updatedata_progress);
-        tv_updatedata_progress.setVisibility(View.INVISIBLE);
+        tv_updatedata_progress.setVisibility(View.GONE);
         mDialog.setContentView(view);
         mDialog.setPositiveButton(new DialogInterface.OnClickListener() {
             @Override
@@ -365,14 +407,58 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         myDialog.show();
     }
 
-    public GpBean requestForCode(String code,int type){
-        String obj = ApiRequest.getDataTongBu(code,type);
+    public GpBean requestForCode(String code, int type) {
+        String obj = ApiRequest.getDataTongBu(code, type);
         if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
             GpBean bean = BaseGP.formatStr(obj);
-            return  bean;
+            return bean;
         }
         return null;
     }
 
+    //今天是否添加过收盘数据
+    public boolean isSaveShouPanData() {
+        String isSaveTodayData = SPUtils.getString(mContext, AppXml.isSaveTodayData, "");
+        String dateToString = DateUtils.dateToString(new Date());
+        if (dateToString.equals(isSaveTodayData)) {//添加过当天收盘数据
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setSaveShouPanData() {
+        String dateToString = DateUtils.dateToString(new Date());
+        SPUtils.setPrefString(mContext, AppXml.isSaveTodayData, dateToString);
+    }
+
+    //是否开盘
+    public boolean isKaiPan() {
+        int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
+        int minute = CalendarUtil.get(Calendar.MINUTE);
+        if ((hour >= 9 && hour < 11) || (hour == 11 && minute <= 30) || (hour >= 13 && hour < 15)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isShouPan() {
+        int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
+        int minute = CalendarUtil.get(Calendar.MINUTE);
+        if (hour > 15 || (hour == 15 && minute > 2)) {//收盘
+            return true;
+        }
+        return false;
+    }
+
+    //是否第一次进入app
+    public boolean isFirstIntoApp() {
+        boolean isFirstIntoApp = SPUtils.getBoolean(mContext, AppXml.isFirstIntoApp, true);
+        return isFirstIntoApp;
+    }
+
+    public void setNoFirstIntoApp() {
+        SPUtils.setPrefBoolean(mContext, AppXml.isFirstIntoApp, false);
+    }
 }
 

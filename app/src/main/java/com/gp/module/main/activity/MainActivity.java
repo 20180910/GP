@@ -12,16 +12,19 @@ import com.github.androidtools.DateUtils;
 import com.github.androidtools.SPUtils;
 import com.github.androidtools.inter.MyOnClickListener;
 import com.github.customview.MyRadioButton;
+import com.github.rxbus.RxBus;
 import com.gp.AppXml;
 import com.gp.Constant;
 import com.gp.R;
 import com.gp.base.BaseActivity;
 import com.gp.base.BaseGP;
+import com.gp.base.EventCallback;
 import com.gp.base.IOCallBack;
 import com.gp.database.DBConstant;
 import com.gp.database.DBManager;
 import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
+import com.gp.module.main.event.ProgressEvent;
 import com.gp.module.main.fragment.HomeFragment;
 import com.gp.module.main.fragment.MyFragment;
 import com.gp.module.main.network.ApiRequest;
@@ -75,18 +78,20 @@ public class MainActivity extends BaseActivity<HomeImp> {
 //        addHomeFragment();
         hiddenBackIcon();
     }
-    private void stopTimer(){
-        if(timerTask!=null){
+
+    private void stopTimer() {
+        if (timerTask != null) {
             timerTask.cancel();
-            timerTask=null;
+            timerTask = null;
         }
-        if(timer!=null){
+        if (timer != null) {
             timer.cancel();
-            timer=null;
+            timer = null;
         }
     }
-    private void startTimer(){
-        if(timer!=null){
+
+    private void startTimer() {
+        if (timer != null) {
             stopTimer();
         }
         timer = new Timer();
@@ -100,17 +105,18 @@ public class MainActivity extends BaseActivity<HomeImp> {
                 }
             }
         };
-        timer.schedule(timerTask,1, periodTime * 1000);
+        timer.schedule(timerTask, 1, periodTime * 1000);
         timerTask.run();
     }
+
     private void refreshZiXuan() {
         RXStart(new IOCallBack<Long>() {
             @Override
             public void call(FlowableEmitter<Long> emitter) {
                 List<GpBean> list = mDaoImp.selectZiXuan();
-                for (int i = 0; i <list.size() ; i++) {
+                for (int i = 0; i < list.size(); i++) {
                     GpBean bean = requestForCode(list.get(i).code, list.get(i).type);
-                    if(bean!=null){
+                    if (bean != null) {
                         bean.type = list.get(i).type;
                         bean.uid = System.nanoTime() + "";
                         bean.gp_uid = list.get(i)._id;
@@ -126,15 +132,17 @@ public class MainActivity extends BaseActivity<HomeImp> {
                 }
                 emitter.onComplete();
             }
+
             @Override
             public void onMyNext(Long obj) {
-                Log("##==onMyNext="+obj);
+                Log("##==onMyNext=" + obj);
             }
         });
     }
 
     public void addHomeFragment() {
-        homeFragment =HomeFragment.newInstance(Constant.ziXuan_0);;
+        homeFragment = HomeFragment.newInstance(Constant.ziXuan_0);
+        ;
         addFragment(R.id.fl_content, homeFragment);
         setTabClickListener();
     }
@@ -206,26 +214,82 @@ public class MainActivity extends BaseActivity<HomeImp> {
     @Override
     protected void initRxBus() {
         super.initRxBus();
+        getEvent(ProgressEvent.class, new EventCallback<ProgressEvent>() {
+            @Override
+            public void accept(ProgressEvent event) {
+                tv_adddata_progress.setText(event.progress+"/"+event.count);
+            }
+        });
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-
     }
 
     @Override
     protected void initData() {
-        boolean isFirstIntoApp = SPUtils.getBoolean(mContext, AppXml.isFirstIntoApp, true);
-        if (isFirstIntoApp) {
-            SPUtils.setPrefBoolean(mContext, AppXml.isFirstIntoApp, false);
-            addGPData();
-        } else {
-            //收盘之后添加当天数据
-            addEveryData();
+        initDialog();
+        RXStart(new IOCallBack() {
+            @Override
+            public void call(FlowableEmitter emitter) {
+                if (isFirstIntoApp()) {//是否第一次进入app
+                    IOFirstIntoApp();
+                } else {
+                    //收盘之后添加当天数据
+                    if (!isSaveShouPanData()) {//没有添加当天收盘数据
+                        if (isShouPan()) {//已经收盘收盘
+                            IOShouPan();
+                        }/* else {
+                            //准备开盘
+                            IOKaiPan();
+                        }*/
+                    }/* else {
+                        //有添加当天收盘数据，已经收盘
+                        IOOther();
+                    }*/
+                }
+                emitter.onComplete();
+            }
+
+            @Override
+            public void onMyNext(Object obj) {
+                startTimer();
+            }
+            @Override
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                setNoFirstIntoApp();
+                setSaveShouPanData();
+                dialogDismiss();
+                addHomeFragment();
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                dialogDismiss();
+                showMsg("操作失败");
+                addHomeFragment();
+            }
+        });
+    }
+
+    private void IOFirstIntoApp() {
+        addGPData();
+    }
+
+
+    private void IOShouPan() {
+        List<GpBean> list = mDaoImp.selectGpBean(1, true);
+        Log("===size" + list.size());
+        final int count = list.size();
+        for (int i = 0; i < count; i++) {
+            String obj = ApiRequest.getDataTongBu(list.get(i).code, list.get(i).type);
+            GpBean gpBean = BaseGP.formatStr(obj);
+            addShouPanData(gpBean,list.get(i).type);
+            RxBus.getInstance().post(new ProgressEvent(i+1,count));
         }
-        startTimer();
     }
 
     private void addEveryData() {
@@ -248,11 +312,13 @@ public class MainActivity extends BaseActivity<HomeImp> {
         }
 //        addTodayData();
     }
-    public void dialogDismiss(){
-        if(myDialog!=null){
+
+    public void dialogDismiss() {
+        if (myDialog != null) {
             myDialog.dismiss();
         }
     }
+
     //添加当天数据
     private void addTodayData() {
         if (myDialog == null) {
@@ -280,13 +346,13 @@ public class MainActivity extends BaseActivity<HomeImp> {
                         bean.gp_day = CalendarUtil.getDay();
 
 
-                        long todayDataCount = mDaoImp.selectTodayDataCount(bean.code,bean.gp_year, bean.gp_month, bean.gp_day);
-                        if(todayDataCount==0){
+                        long todayDataCount = mDaoImp.selectTodayDataCount(bean.code, bean.gp_year, bean.gp_month, bean.gp_day);
+                        if (todayDataCount == 0) {
                             long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
                             Log("==addDataToTable=" + l);
                         }
-                    }else{
-                        Log.i(TAG+"##===","===code2:"+list.get(i).code);
+                    } else {
+                        Log.i(TAG + "##===", "===code2:" + list.get(i).code);
                     }
                     int progress = i + 1;
                     emitter.onNext(progress + "/" + count);
@@ -321,89 +387,67 @@ public class MainActivity extends BaseActivity<HomeImp> {
 
     //添加数据到code表
     public void addGPData() {
-        initDialog();
-        RXStart(pl_load, new IOCallBack<int[]>() {
-            @Override
-            public void call(FlowableEmitter<int[]> emitter) {
-                mDaoImp.deleteTableCode();
-                List<String> sh = sh();
-                List<String> sz = sz();
-                int count = sh.size() + sz.size();
-                int scaleNum = 0;
-                int[] obj;
-                for (int i = 0; i < sh.size(); i++) {
-//                for (int i = 0; i < 10; i++) {
-                    scaleNum++;
-                    obj = new int[2];
-                    obj[0] = scaleNum;
-                    obj[1] = count;
-                    addCodeData(sh.get(i), DBConstant.type_6);
-//                    mDaoImp.addGP(sh.get(i), DBConstant.type_6);
-                    emitter.onNext(obj);
-                }
-                for (int i = 0; i < sz.size(); i++) {
-//                for (int i = 0; i < 10; i++) {
-                    scaleNum++;
-                    obj = new int[2];
-                    obj[0] = scaleNum;
-                    obj[1] = count;
-                    addCodeData(sz.get(i), DBConstant.type_0);
-//                    long result = mDaoImp.addGP(sz.get(i), DBConstant.type_0);
-                    emitter.onNext(obj);
-                }
-                emitter.onComplete();
-            }
-
-            @Override
-            public void onMyNext(int[] obj) {
-                tv_adddata_progress.setVisibility(View.VISIBLE);
-                tv_adddata_progress.setText(obj[0] + "/" + obj[1]);
-            }
-
-            @Override
-            public void onMyCompleted() {
-                super.onMyCompleted();
-                addEveryData();
-            }
-
-            @Override
-            public void onMyError(Throwable e) {
-                super.onMyError(e);
-                myDialog.dismiss();
-                showMsg("添加失败");
-            }
-        });
+        List<String> sh = sh();
+        List<String> sz = sz();
+        int count = sh.size() + sz.size();
+        int scaleNum = 0;
+        int[] obj;
+        for (int i = 0; i < sh.size(); i++) {
+            scaleNum++;
+            obj = new int[2];
+            obj[0] = scaleNum;
+            obj[1] = count;
+            addCodeData(sh.get(i), DBConstant.type_6);
+            RxBus.getInstance().post(new ProgressEvent(scaleNum,count));
+        }
+        for (int i = 0; i < sz.size(); i++) {
+            scaleNum++;
+            obj = new int[2];
+            obj[0] = scaleNum;
+            obj[1] = count;
+            addCodeData(sz.get(i), DBConstant.type_0);
+            RxBus.getInstance().post(new ProgressEvent(scaleNum,count));
+        }
     }
 
     private void addCodeData(String code, int type) {
         String obj = ApiRequest.getDataTongBu(code, type);
-        if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
-            GpBean bean = BaseGP.formatStr(obj);
+        GpBean bean = BaseGP.formatStr(obj);
+        if (bean != null) {
             //修改code表的name
-            boolean result = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
-            if(result){
-                String uid = mDaoImp.selectUid(code, DBManager.T_Code);
-                //如果收盘，第一次打开app就添加当天数据
-                //修改code表的name
-                bean.type = type;
-                bean.uid = System.nanoTime() + "";
-                bean.gp_uid = uid;
-                bean.update_time = new Date().getTime();
-                bean.create_time = new Date().getTime();
-
-                bean.gp_year = CalendarUtil.getYear();
-                bean.gp_month = CalendarUtil.getMonth();
-                bean.gp_day = CalendarUtil.getDay();
-
-                long todayDataCount = mDaoImp.selectTodayDataCount(bean.code,bean.gp_year, bean.gp_month, bean.gp_day);
-                if(todayDataCount==0){
-                    long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
-                    Log("==addDataToTable=" + l);
+            if (!mDaoImp.existCode(code, DBManager.T_Code)) {//不存在code才添加数据
+                boolean result = mDaoImp.addGP(code, bean.gpstr, bean.name, type + "");
+                if (result) {
+                    addShouPanData(bean, type);
                 }
             }
-        }else{
-            Log.i(TAG+"###===","===code:"+code);
+        } else {
+            Log.i(TAG + "###===", "===code:" + code);
         }
+    }
+
+    public void addShouPanData(GpBean bean, int type) {
+        if (isShouPan()) {
+            String uid = mDaoImp.selectUid(bean.code, DBManager.T_Code);
+            //如果收盘，第一次打开app就添加当天数据
+            //修改code表的name
+            bean.type = type;
+            bean.uid = System.nanoTime() + "";
+            bean.gp_uid = uid;
+            bean.update_time = new Date().getTime();
+            bean.create_time = new Date().getTime();
+
+            bean.gp_year = CalendarUtil.getYear();
+            bean.gp_month = CalendarUtil.getMonth();
+            bean.gp_day = CalendarUtil.getDay();
+
+            long todayDataCount = mDaoImp.selectTodayDataCount(bean.code, bean.gp_year, bean.gp_month, bean.gp_day);
+            if (todayDataCount == 0) {
+                long l = mDaoImp.addDataToTable(bean, DBManager.T_Everyday);
+                Log("==addDataToTable=" + l);
+            }
+        }
+
     }
 
     private List sz() {
@@ -452,7 +496,7 @@ public class MainActivity extends BaseActivity<HomeImp> {
         }
         selectView = rb_home_tab2;
         if (ziXuanFragment == null) {
-            ziXuanFragment =HomeFragment.newInstance(Constant.ziXuan_1);
+            ziXuanFragment = HomeFragment.newInstance(Constant.ziXuan_1);
             addFragment(R.id.fl_content, ziXuanFragment);
         } else {
             showFragment(ziXuanFragment);
