@@ -29,6 +29,8 @@ import com.gp.AppXml;
 import com.gp.Constant;
 import com.gp.GetSign;
 import com.gp.R;
+import com.gp.module.main.bean.GpBean;
+import com.gp.module.main.network.ApiRequest;
 import com.library.base.MyBaseActivity;
 import com.library.base.ProgressLayout;
 import com.library.base.view.MyWebViewClient;
@@ -361,6 +363,15 @@ public abstract class BaseActivity<I extends BaseDaoImp> extends MyBaseActivity 
         });
         myDialog = mDialog.create();
         myDialog.show();
+    }
+
+    public GpBean requestForCode(String code,int type){
+        String obj = ApiRequest.getDataTongBu(code,type);
+        if (obj != null && obj.indexOf("v_pv_none_match") == -1) {
+            GpBean bean = BaseGP.formatStr(obj);
+            return  bean;
+        }
+        return null;
     }
 
 }

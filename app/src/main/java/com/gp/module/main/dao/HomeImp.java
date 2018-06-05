@@ -239,22 +239,23 @@ public class HomeImp extends BaseDaoImp {
 
 
     public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp) {
-        return selectEveryDay(page,searchInfo,isUp,false);
+        return selectEveryDay(page, searchInfo, isUp, false);
     }
-    public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp,boolean isZiXuan) {
+
+    public List<GpBean> selectEveryDay(int page, String searchInfo, boolean isUp, boolean isZiXuan) {
         String orderBy = DBConstant.change_price_percent + " asc";
         if (isUp) {
             orderBy = DBConstant.change_price_percent + " desc";
         }
-        StringBuffer searchSql =null;
-        if(isZiXuan){
-            searchSql= new StringBuffer();
+        StringBuffer searchSql = null;
+        if (isZiXuan) {
+            searchSql = new StringBuffer();
             searchSql.append(DBConstant.status + " = '1' ");
         }
-        String[] searchStr =null;
+        String[] searchStr = null;
         if (!TextUtils.isEmpty(searchInfo)) {
-            searchStr= new String[2];
-            if(searchSql==null){
+            searchStr = new String[2];
+            if (searchSql == null) {
                 searchSql = new StringBuffer();
             }
             searchSql.append(DBConstant.name + " like ? or ");
@@ -332,7 +333,7 @@ public class HomeImp extends BaseDaoImp {
                         DBConstant.average_price,
                         DBConstant.shi_ying_lv_dong,
                         DBConstant.shi_ying_lv_jing
-                }, searchSql==null?null:searchSql.toString(), searchStr, null, null, orderBy, limit);
+                }, searchSql == null ? null : searchSql.toString(), searchStr, null, null, orderBy, limit);
         List<GpBean> list = new ArrayList<GpBean>();
         GpBean bean;
         while (query.moveToNext()) {
@@ -477,49 +478,101 @@ public class HomeImp extends BaseDaoImp {
         return list;
     }
 
-    public long selectTodayDataCount(String code,int year,int month,int day) {
+    public long selectTodayDataCount(String code, int year, int month, int day) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String sql="select "+DBConstant._id+" from " + DBManager.T_Everyday+" where "+DBConstant.code+"= ? and "+DBConstant.gp_year+"= ? and "+DBConstant.gp_month+"= ? and "+DBConstant.gp_day+"= ?";
-        Log.i(TAG+"###===","==sql="+sql);
-        Cursor cursor = db.rawQuery(sql, new String[]{code,year+"",month+"",day+""});
+        String sql = "select " + DBConstant._id + " from " + DBManager.T_Everyday + " where " + DBConstant.code + "= ? and " + DBConstant.gp_year + "= ? and " + DBConstant.gp_month + "= ? and " + DBConstant.gp_day + "= ?";
+        Log.i(TAG + "###===", "==sql=" + sql);
+        Cursor cursor = db.rawQuery(sql, new String[]{code, year + "", month + "", day + ""});
         int count = cursor.getCount();
         return count;
     }
-    public boolean joinZiXuan(String code,String tableName) {
+
+    public boolean joinZiXuan(String code, String tableName) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "1");
         long insert = db.update(tableName, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
-        Log.i(TAG+"===","==insert="+insert);
+        Log.i(TAG + "===", "==insert=" + insert);
         return getBoolean(insert);
     }
-    private boolean getBoolean(long l){
-        return l>0?true:false;
+
+    private boolean getBoolean(long l) {
+        return l > 0 ? true : false;
     }
-    public boolean removeZiXuan(String code,String tableName) {
+
+    public boolean removeZiXuan(String code, String tableName) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DBConstant.status, "0");
         long insert = db.update(tableName, values, DBConstant.code + " =? ", new String[]{code});
         db.close();
-        Log.i(TAG+"===","==insert="+insert);
+        Log.i(TAG + "===", "==insert=" + insert);
         return getBoolean(insert);
     }
+
     public boolean isZiXuan(String code) {
         SQLiteDatabase db = getWritableDatabase();
-        boolean scale=false;
+        boolean scale = false;
         Cursor query = db.query(DBManager.T_Code,
                 new String[]{
                         DBConstant.status
-                }, DBConstant.code +"=? and "+DBConstant.status+"='1'", new String[]{code}, null, null, null, null );
+                }, DBConstant.code + "=? and " + DBConstant.status + "='1'", new String[]{code}, null, null, null, null);
         while (query.moveToNext()) {
             int status = query.getInt(query.getColumnIndex(DBConstant.status));
-            if(status==1){
-                scale=true;
+            if (status == 1) {
+                scale = true;
             }
         }
         db.close();
         return scale;
+    }
+
+    public List<GpBean> selectZiXuan() {
+        String orderBy = DBConstant.create_time + " desc";
+        String searchSql = DBConstant.status + " =? ";
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor query = db.query(DBManager.T_Code,
+                new String[]{
+                        DBConstant._id,
+                        DBConstant.uid,
+                        DBConstant.create_time,
+                        DBConstant.update_time,
+                        DBConstant.gpstr,
+                        DBConstant.name,
+                        DBConstant.code,
+                        DBConstant.type,
+                        DBConstant.status
+                }, searchSql, new String[]{"1"}, null, null, orderBy);
+        List<GpBean> list = new ArrayList<GpBean>();
+        GpBean bean;
+        while (query.moveToNext()) {
+            bean = new GpBean();
+            String id = query.getString(query.getColumnIndex(DBConstant._id));
+            String uid = query.getString(query.getColumnIndex(DBConstant.uid));
+            long create_time = query.getLong(query.getColumnIndex(DBConstant.create_time));
+            long update_time = query.getLong(query.getColumnIndex(DBConstant.update_time));
+            String gpstr = query.getString(query.getColumnIndex(DBConstant.gpstr));
+            String name = query.getString(query.getColumnIndex(DBConstant.name));
+            String code = query.getString(query.getColumnIndex(DBConstant.code));
+            int type = query.getInt(query.getColumnIndex(DBConstant.type));
+            int status = query.getInt(query.getColumnIndex(DBConstant.status));
+
+//            long updateTime = string2Date(query.getString(query.getColumnIndex(DBConstant.updateTime)));
+//            long creatTime = string2Date(query.getString(query.getColumnIndex(DBConstant.createTime)));
+            bean._id = id;
+            bean.uid = uid;
+            bean.create_time = create_time;
+            bean.update_time = update_time;
+            bean.gpstr = gpstr;
+            bean.name = name;
+            bean.code = code;
+            bean.type = type;
+            bean.status = status;
+
+            list.add(bean);
+        }
+        db.close();
+        return list;
     }
 }

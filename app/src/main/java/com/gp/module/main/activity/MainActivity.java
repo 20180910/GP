@@ -97,7 +97,33 @@ public class MainActivity extends BaseActivity<HomeImp> {
         },1, periodTime * 1000);
     }
     private void refreshZiXuan() {
+        RXStart(new IOCallBack<Long>() {
+            @Override
+            public void call(FlowableEmitter<Long> emitter) {
+                List<GpBean> list = mDaoImp.selectZiXuan();
+                for (int i = 0; i <list.size() ; i++) {
+                    GpBean bean = requestForCode(list.get(i).code, list.get(i).type);
+                    if(bean!=null){
+                        bean.type = list.get(i).type;
+                        bean.uid = System.nanoTime() + "";
+                        bean.gp_uid = list.get(i)._id;
+                        bean.update_time = new Date().getTime();
+                        bean.create_time = new Date().getTime();
 
+                        bean.gp_year = CalendarUtil.getYear();
+                        bean.gp_month = CalendarUtil.getMonth();
+                        bean.gp_day = CalendarUtil.getDay();
+                    }
+                    long l = mDaoImp.addDataToTable(bean, DBManager.T_EveryMinute);
+                    emitter.onNext(l);
+                }
+                emitter.onComplete();
+            }
+            @Override
+            public void onMyNext(Long obj) {
+                Log("##==onMyNext="+obj);
+            }
+        });
     }
 
     public void addHomeFragment() {
@@ -205,10 +231,12 @@ public class MainActivity extends BaseActivity<HomeImp> {
             } else {
                 dialogDismiss();
                 addHomeFragment();
+                startTimer();
             }
         } else {
             dialogDismiss();
             addHomeFragment();
+            startTimer();
         }
 //        addTodayData();
     }
