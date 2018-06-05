@@ -74,6 +74,8 @@ public class HomeFragment extends BaseFragment<HomeImp> {
                 tv_price.setText(bean.now_price+"");
 
                 TextView tv_wainei_pan = holder.getTextView(R.id.tv_wainei_pan);
+                TextView tv_wainei_pan_num = holder.getTextView(R.id.tv_wainei_pan_num);
+                tv_wainei_pan_num.setText(bean.wai_num+"\n"+bean.nei_num);
                 double waiNeiPan;
                 if(Double.parseDouble(bean.nei_num)==0){
                     waiNeiPan=0;

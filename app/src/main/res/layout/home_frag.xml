@@ -37,19 +37,26 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:text="外盘:内盘"
+                        android:text="外/内"
                         android:gravity="right"
                         />
                     <TextView
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
+                        android:text="外盘:内盘"
+                        android:gravity="right"
+                        />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="0.8"
+                        android:layout_height="wrap_content"
                         android:text="价格"
                         android:gravity="right"
                         />
                     <TextView
                         android:layout_width="0dp"
-                        android:layout_weight="1"
+                        android:layout_weight="0.7"
                         android:layout_height="wrap_content"
                         android:text="涨幅"
                         android:gravity="right"
