@@ -255,11 +255,11 @@ public class MainActivity extends BaseActivity<HomeImp> {
 
             @Override
             public void onMyNext(Object obj) {
-                startTimer();
             }
             @Override
             public void onMyCompleted() {
                 super.onMyCompleted();
+                startTimer();
                 setNoFirstIntoApp();
                 setSaveShouPanData();
                 dialogDismiss();

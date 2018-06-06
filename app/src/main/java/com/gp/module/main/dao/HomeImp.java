@@ -114,9 +114,9 @@ public class HomeImp extends BaseDaoImp {
     }
 
     public List<GpBean> selectGpBean(int page, String searchInfo, boolean isOrderByCreateTime, SQLiteDatabase db, boolean selectAll) {
-        String orderBy = DBConstant.update_time + " desc";
+        String orderBy = DBConstant.create_time + " desc";
         if (isOrderByCreateTime) {
-            orderBy = DBConstant.create_time + " desc";
+            orderBy = DBConstant.create_time + " asc";
         }
         StringBuffer searchSql = null;
         String[] searchStr = new String[4];
