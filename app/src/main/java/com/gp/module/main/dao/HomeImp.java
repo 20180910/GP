@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.gp.Constant;
 import com.gp.base.BaseDaoImp;
 import com.gp.database.DBConstant;
 import com.gp.database.DBManager;
@@ -93,7 +94,7 @@ public class HomeImp extends BaseDaoImp {
 
 
         values.put(DBConstant.gpstr, str);
-        values.put(DBConstant.name, name);
+        values.put(DBConstant.name, name.replace(" ",""));
 
 //        values.put(DBConstant.gp_year,instance.get(Calendar.YEAR));
 //        values.put(DBConstant.gp_month,instance.get(Calendar.MONTH)+1);
@@ -112,7 +113,63 @@ public class HomeImp extends BaseDaoImp {
     public List<GpBean> selectGpBean(int page, boolean selectAll) {
         return selectGpBean(page, null, false, getWritableDatabase(), selectAll);
     }
+    public List<GpBean> selectGpBean(int page, String searchInfo,boolean isZiXuan,boolean selectAll,SQLiteDatabase db) {
+        String orderBy = DBConstant.create_time + " desc";
+        StringBuffer searchSql =new StringBuffer();
+        String[] searchStr = new String[3];
 
+        searchSql.append(DBConstant.status+" =? and (");
+        searchSql.append(DBConstant.code+" like ? or ");
+        searchSql.append(DBConstant.name+" like ? ) ");
+
+        searchStr[0]=isZiXuan?Constant.ziXuan_1+"": Constant.ziXuan_0+"";
+        searchStr[1]="%"+searchInfo+"%";
+        searchStr[2]="%"+searchInfo+"%";
+
+        String limit = getLimit(page);
+        Cursor query = db.query(DBManager.T_Code,
+                new String[]{
+                        DBConstant._id,
+                        DBConstant.uid,
+                        DBConstant.create_time,
+                        DBConstant.update_time,
+                        DBConstant.gpstr,
+                        DBConstant.name,
+                        DBConstant.code,
+                        DBConstant.type,
+                        DBConstant.status
+                }, searchSql.toString(),searchStr, null, null, orderBy, selectAll ? null : limit);
+        List<GpBean> list = new ArrayList<GpBean>();
+        GpBean bean;
+        while (query.moveToNext()) {
+            bean = new GpBean();
+            String id = query.getString(query.getColumnIndex(DBConstant._id));
+            String uid = query.getString(query.getColumnIndex(DBConstant.uid));
+            long create_time = query.getLong(query.getColumnIndex(DBConstant.create_time));
+            long update_time = query.getLong(query.getColumnIndex(DBConstant.update_time));
+            String gpstr = query.getString(query.getColumnIndex(DBConstant.gpstr));
+            String name = query.getString(query.getColumnIndex(DBConstant.name));
+            String code = query.getString(query.getColumnIndex(DBConstant.code));
+            int type = query.getInt(query.getColumnIndex(DBConstant.type));
+            int status = query.getInt(query.getColumnIndex(DBConstant.status));
+
+//            long updateTime = string2Date(query.getString(query.getColumnIndex(DBConstant.updateTime)));
+//            long creatTime = string2Date(query.getString(query.getColumnIndex(DBConstant.createTime)));
+            bean._id = id;
+            bean.uid = uid;
+            bean.create_time = create_time;
+            bean.update_time = update_time;
+            bean.gpstr = gpstr;
+            bean.name = name;
+            bean.code = code;
+            bean.type = type;
+            bean.status = status;
+
+            list.add(bean);
+        }
+        db.close();
+        return list;
+    }
     public List<GpBean> selectGpBean(int page, String searchInfo, boolean isOrderByCreateTime, SQLiteDatabase db, boolean selectAll) {
         String orderBy = DBConstant.create_time + " desc";
         if (isOrderByCreateTime) {
@@ -214,7 +271,7 @@ public class HomeImp extends BaseDaoImp {
         values.put(DBConstant.gp_month, bean.gp_month + "");
         values.put(DBConstant.gp_day, bean.gp_day + "");
         values.put(DBConstant.gpstr, bean.gpstr + "");
-        values.put(DBConstant.name, bean.name + "");
+        values.put(DBConstant.name, bean.name + "".replace(" ",""));
         values.put(DBConstant.code, bean.code + "");
         values.put(DBConstant.now_price, bean.now_price + "");
         values.put(DBConstant.zuo_price, bean.zuo_price + "");

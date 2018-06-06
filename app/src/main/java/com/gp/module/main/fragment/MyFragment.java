@@ -3,7 +3,11 @@ package com.gp.module.main.fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.androidtools.inter.MyOnClickListener;
@@ -30,8 +34,15 @@ import io.reactivex.FlowableEmitter;
 public class MyFragment extends BaseFragment<HomeImp> {
     @BindView(R.id.rv_all_code)
     RecyclerView rv_all_code;
+    @BindView(R.id.cb_code_zixuan)
+    CheckBox cb_code_zixuan;
+
+    @BindView(R.id.et_code_search)
+    EditText et_code_search;
 
     MyLoadMoreAdapter adapter;
+
+    String searchInfo="";
 
     @Override
     protected int getContentView() {
@@ -69,6 +80,30 @@ public class MyFragment extends BaseFragment<HomeImp> {
         };
         adapter.setOnLoadMoreListener(this);
         rv_all_code.setAdapter(adapter);
+
+
+
+
+        et_code_search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchInfo=s.toString();
+                getData(1,false);
+            }
+        });
+
+        cb_code_zixuan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getData(1,false);
+            }
+        });
     }
 
     @Override
@@ -83,7 +118,7 @@ public class MyFragment extends BaseFragment<HomeImp> {
         RXStart(pl_load, new IOCallBack<List<GpBean>>() {
             @Override
             public void call(FlowableEmitter emitter) {
-                List<GpBean> gpBeen = mDaoImp.selectGpBean(page, false);
+                List<GpBean> gpBeen = mDaoImp.selectGpBean(page, searchInfo,cb_code_zixuan.isChecked(),false,mDaoImp.getWritableDatabase());
                 emitter.onNext(gpBeen);
                 emitter.onComplete();
             }

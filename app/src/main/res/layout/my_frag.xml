@@ -16,6 +16,53 @@
             android:orientation="vertical"
             android:gravity="center_vertical"
             >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@color/white"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                >
+                <com.github.customview.MyCheckBox
+                    android:id="@+id/cb_code_zixuan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:my_checkbox_checked="@drawable/zixuan_check"
+                    app:my_checkbox_checked_color="@color/blue_00"
+                    app:my_checkbox_normal="@drawable/zixuan_normal"
+                    app:my_checkbox_normal_color="@color/gray_66"
+                    android:checked="false"
+                    android:paddingLeft="2dp"
+                    android:text="自选"
+                    />
+                <com.github.customview.MyLinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    app:my_ll_solid="@color/white"
+                    app:my_ll_all_line="true"
+                    app:my_ll_corner_radius="3dp"
+                    android:layout_margin="5dp"
+                    >
+                <com.github.customview.MyEditText
+                    android:id="@+id/et_code_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="请输入搜索内容"
+                    android:inputType="text"
+                    android:imeOptions="actionDone"
+                    android:textSize="13sp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:textColorHint="@color/gray_d7"
+                    />
+                </com.github.customview.MyLinearLayout>
+            </LinearLayout>
             <com.library.base.view.MyRecyclerView
                 android:id="@+id/rv_all_code"
                 android:layout_width="match_parent"
