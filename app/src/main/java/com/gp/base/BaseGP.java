@@ -1,7 +1,6 @@
 package com.gp.base;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.gp.module.main.bean.GpBean;
 
@@ -91,10 +90,10 @@ public class BaseGP {
 
     public static float toFloat(String data) {
         if (TextUtils.isEmpty(data)) {
-            Log.e("toFloat", "===" + Float.parseFloat("0"));
+//            Log.e("toFloat", "===" + Float.parseFloat("0"));
             return Float.parseFloat("0");
         } else {
-            Log.e("toFloat", "===" + Float.parseFloat(data));
+//            Log.e("toFloat", "===" + Float.parseFloat(data));
             return Float.parseFloat(data);
         }
     }
