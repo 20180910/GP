@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.androidtools.inter.MyOnClickListener;
@@ -33,6 +34,8 @@ import io.reactivex.FlowableEmitter;
  */
 
 public class HomeFragment extends BaseFragment<HomeImp> {
+    @BindView(R.id.ll_my)
+    LinearLayout ll_my;
     @BindView(R.id.rv_all_gp)
     RecyclerView rv_all_gp;
     MyLoadMoreAdapter adapter;
@@ -64,6 +67,7 @@ public class HomeFragment extends BaseFragment<HomeImp> {
 
     @Override
     protected void initView() {
+        clearFocus(rv_all_gp,ll_my);
         adapter=new MyLoadMoreAdapter<GpBean>(mContext,R.layout.every_day_item,pageSize) {
             @Override
             public void bindData(MyRecyclerViewHolder holder, int position, final GpBean bean) {

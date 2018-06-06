@@ -117,8 +117,11 @@ public class HomeImp extends BaseDaoImp {
         String orderBy = DBConstant.create_time + " desc";
         StringBuffer searchSql =new StringBuffer();
         String[] searchStr = new String[3];
-
-        searchSql.append(DBConstant.status+" =? and (");
+        if(isZiXuan){
+            searchSql.append(DBConstant.status+" =? and (");
+        }else{
+            searchSql.append("((1=1) or "+DBConstant.status+" =? ) and (");
+        }
         searchSql.append(DBConstant.code+" like ? or ");
         searchSql.append(DBConstant.name+" like ? ) ");
 

@@ -5,11 +5,14 @@ import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.TextView;
 
+import com.github.androidtools.PhoneUtils;
 import com.github.androidtools.SPUtils;
 import com.github.baseclass.view.Loading;
 import com.github.baseclass.view.MyDialog;
@@ -256,5 +259,21 @@ public abstract class BaseFragment<I extends BaseDaoImp> extends MyBaseFragment 
         myDialog.show();
     }
 
-
+    public void clearFocus(RecyclerView recyclerView,final View view){
+        if(recyclerView==null){
+            return;
+        }
+        recyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction()==MotionEvent.ACTION_DOWN||event.getAction()==MotionEvent.ACTION_MOVE){
+                    if(view!=null){
+                        view.requestFocusFromTouch();
+                    }
+                    PhoneUtils.hiddenKeyBoard(mContext);
+                }
+                return false;
+            }
+        });
+    }
 }

@@ -38,6 +38,7 @@
                     android:text="自选"
                     />
                 <com.github.customview.MyLinearLayout
+                    android:id="@+id/ll_my"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
@@ -46,6 +47,8 @@
                     app:my_ll_all_line="true"
                     app:my_ll_corner_radius="3dp"
                     android:layout_margin="5dp"
+                    android:focusableInTouchMode="true"
+                    android:focusable="true"
                     >
                 <com.github.customview.MyEditText
                     android:id="@+id/et_code_search"

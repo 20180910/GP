@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.androidtools.inter.MyOnClickListener;
@@ -32,6 +33,8 @@ import io.reactivex.FlowableEmitter;
  */
 
 public class MyFragment extends BaseFragment<HomeImp> {
+    @BindView(R.id.ll_my)
+    LinearLayout ll_my;
     @BindView(R.id.rv_all_code)
     RecyclerView rv_all_code;
     @BindView(R.id.cb_code_zixuan)
@@ -78,6 +81,9 @@ public class MyFragment extends BaseFragment<HomeImp> {
                 });
             }
         };
+
+        clearFocus(rv_all_code,ll_my);
+
         adapter.setOnLoadMoreListener(this);
         rv_all_code.setAdapter(adapter);
 
