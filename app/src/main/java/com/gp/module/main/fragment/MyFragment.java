@@ -1,5 +1,6 @@
 package com.gp.module.main.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -15,10 +16,12 @@ import com.github.androidtools.inter.MyOnClickListener;
 import com.github.baseclass.adapter.MyLoadMoreAdapter;
 import com.github.baseclass.adapter.MyRecyclerViewHolder;
 import com.github.rxbus.RxBus;
+import com.gp.IntentParam;
 import com.gp.R;
 import com.gp.base.BaseFragment;
 import com.gp.base.IOCallBack;
 import com.gp.database.DBManager;
+import com.gp.module.main.activity.NowWaiNeiPanActivity;
 import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
 import com.gp.module.main.event.JoinEvent;
@@ -77,6 +80,16 @@ public class MyFragment extends BaseFragment<HomeImp> {
                     @Override
                     protected void onNoDoubleClick(View view) {
                         joinZiXuan(bean.code,position);
+                    }
+                });
+
+                tv_all_code_name.setOnClickListener(new MyOnClickListener() {
+                    @Override
+                    protected void onNoDoubleClick(View view) {
+                        Intent intent=new Intent();
+                        intent.putExtra(IntentParam.name,bean.name);
+                        intent.putExtra(IntentParam.code,bean.code);
+                        STActivity(intent,NowWaiNeiPanActivity.class);
                     }
                 });
             }

@@ -17,7 +17,27 @@
             android:orientation="vertical"
             android:background="@color/background_f2"
             >
-            <!--your view-->
+           <!-- <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="none"
+                >-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:background="@color/white"
+                    android:gravity="center_vertical"
+                    >
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/chart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        />
+                </LinearLayout>
+
+           <!-- </HorizontalScrollView>-->
 
 
 

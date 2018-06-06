@@ -5,8 +5,8 @@ package com.gp;
  */
 
 public class IntentParam {
-    public static final String isQianZhengPay = "isQianZhengPay";
-    public static final String selectShenQing = "selectShenQing";
+    public static final String code = "code";
+    public static final String name = "name";
     public static final String ziXunId = "ziXunId";
     public static final String guoJia = "guoJia";
     public static final String detailInto = "detailInto";
