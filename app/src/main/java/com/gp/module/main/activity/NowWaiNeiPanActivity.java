@@ -3,6 +3,7 @@ package com.gp.module.main.activity;
 import android.graphics.Color;
 import android.view.View;
 
+import com.github.androidtools.AndroidUtils;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -71,12 +72,17 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
         });
     }
     private void setList(List<GpBean> list) {
-        List<Entry> entries = new ArrayList<Entry>();
+        List<Entry> waiPan = new ArrayList<Entry>();
+        List<Entry> neiPan = new ArrayList<Entry>();
+        List<Entry> waiNeiBi = new ArrayList<Entry>();
 
         for (int i = 0; i < list.size(); i++) {
-            entries.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
+            waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
+            neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
+            double bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
+            waiNeiBi.add(new Entry(i, (float) bi));
         }
-        LineDataSet dataSet = new LineDataSet(entries, "外盘"); // add entries to dataset
+        LineDataSet dataSet = new LineDataSet(waiPan, "外盘"); // add entries to dataset
         dataSet.setColor(Color.RED);
         dataSet.setAxisDependency(YAxis.AxisDependency.RIGHT);
         dataSet.setValueTextColor(Color.BLACK);
@@ -85,20 +91,22 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
 
 
 
-        List<Entry> entries2 = new ArrayList<Entry>();
-
-        for (int i = 0; i < list.size(); i++) {
-            entries2.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
-        }
-        LineDataSet dataSet2 = new LineDataSet(entries2, "内盘"); // add entries to dataset
+        LineDataSet dataSet2 = new LineDataSet(neiPan, "内盘"); // add entries to dataset
         dataSet2.setColor(Color.GREEN);
         dataSet2.setAxisDependency(YAxis.AxisDependency.RIGHT);
         dataSet2.setDrawCircles(false);
         dataSet2.setValueTextColor(Color.BLACK);
 
 
+        LineDataSet dataSet3 = new LineDataSet(waiNeiBi, "外盘/内盘"); // add entries to dataset
+        dataSet3.setColor(Color.BLUE);
+        dataSet3.setAxisDependency(YAxis.AxisDependency.LEFT);
+        dataSet3.setDrawCircles(false);
+        dataSet3.setValueTextColor(Color.BLACK);
 
-        LineData lineData = new LineData(dataSet,dataSet2);
+
+
+        LineData lineData = new LineData(dataSet,dataSet2,dataSet3);
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
