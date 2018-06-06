@@ -11,6 +11,8 @@ import android.widget.FrameLayout;
 import com.github.androidtools.DateUtils;
 import com.github.androidtools.SPUtils;
 import com.github.androidtools.inter.MyOnClickListener;
+import com.github.baseclass.permission.PermissionsManager;
+import com.github.baseclass.permission.PermissionsResultAction;
 import com.github.customview.MyRadioButton;
 import com.github.rxbus.RxBus;
 import com.gp.AppXml;
@@ -232,47 +234,56 @@ public class MainActivity extends BaseActivity<HomeImp> {
 
     @Override
     protected void initData() {
-        initDialog();
-        RXStart(new IOCallBack() {
+        PermissionsManager.getInstance().requestAllManifestPermissionsIfNecessary(mContext, new PermissionsResultAction() {
             @Override
-            public void call(FlowableEmitter emitter) {
-                if (isFirstIntoApp()) {//是否第一次进入app
-                    IOFirstIntoApp();
-                } else {
-                    //收盘之后添加当天数据
-                    if (!isSaveShouPanData()) {//没有添加当天收盘数据
-                        if (isShouPan()) {//已经收盘收盘
-                            IOShouPan();
-                        }/* else {
+            public void onGranted() {
+                initDialog();
+                RXStart(new IOCallBack() {
+                    @Override
+                    public void call(FlowableEmitter emitter) {
+                        if (isFirstIntoApp()) {//是否第一次进入app
+                            IOFirstIntoApp();
+                        } else {
+                            //收盘之后添加当天数据
+                            if (!isSaveShouPanData()) {//没有添加当天收盘数据
+                                if (isShouPan()) {//已经收盘收盘
+                                    IOShouPan();
+                                }/* else {
                             //准备开盘
                             IOKaiPan();
                         }*/
-                    }/* else {
+                            }/* else {
                         //有添加当天收盘数据，已经收盘
                         IOOther();
                     }*/
-                }
-                emitter.onComplete();
-            }
+                        }
+                        emitter.onComplete();
+                    }
 
-            @Override
-            public void onMyNext(Object obj) {
+                    @Override
+                    public void onMyNext(Object obj) {
+                    }
+                    @Override
+                    public void onMyCompleted() {
+                        super.onMyCompleted();
+                        startTimer();
+                        setNoFirstIntoApp();
+                        setSaveShouPanData();
+                        dialogDismiss();
+                        addHomeFragment();
+                    }
+                    @Override
+                    public void onMyError(Throwable e) {
+                        super.onMyError(e);
+                        dialogDismiss();
+                        showMsg("操作失败");
+                        addHomeFragment();
+                    }
+                });
             }
             @Override
-            public void onMyCompleted() {
-                super.onMyCompleted();
-                startTimer();
-                setNoFirstIntoApp();
-                setSaveShouPanData();
-                dialogDismiss();
-                addHomeFragment();
-            }
-            @Override
-            public void onMyError(Throwable e) {
-                super.onMyError(e);
-                dialogDismiss();
-                showMsg("操作失败");
-                addHomeFragment();
+            public void onDenied(String s) {
+                finish();
             }
         });
     }
