@@ -102,6 +102,8 @@ public class MainActivity extends BaseActivity<HomeImp> {
                 int minute = CalendarUtil.get(Calendar.MINUTE);
                 if ((hour >= 9 && hour < 11) || (hour == 11 && minute <= 30) || (hour >= 13 && hour < 15)) {
                     refreshZiXuan();
+                }else if(hour>=15){
+                    stopTimer();
                 }
             }
         };

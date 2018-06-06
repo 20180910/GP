@@ -112,6 +112,7 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setLabelCount(10);
         xAxis.setLabelRotationAngle(45);
+        xAxis.setAxisMaximum(3000);
 
 
 
