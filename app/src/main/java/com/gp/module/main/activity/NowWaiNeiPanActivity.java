@@ -94,7 +94,9 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
                 Calendar calendar=Calendar.getInstance();
                 calendar.setTime(new Date(list.get(i).create_time));
-                if(calendar.get(Calendar.MINUTE)>=31){
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                if (((hour == 9 &&minute>=31)||(hour>9&& hour < 11)) || (hour == 11 && minute <= 30) || (hour >= 13 && hour < 15)) {
                     waiNeiBi.add(new Entry(i, (float) bi));
 
                     waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
