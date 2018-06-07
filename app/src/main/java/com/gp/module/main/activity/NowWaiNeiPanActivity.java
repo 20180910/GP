@@ -88,7 +88,7 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
                 Calendar calendar=Calendar.getInstance();
                 calendar.setTime(new Date(list.get(i).create_time));
-                if(calendar.get(Calendar.MINUTE)>=30){
+                if(calendar.get(Calendar.MINUTE)>=31){
                     waiNeiBi.add(new Entry(i, (float) bi));
                 }
             }
