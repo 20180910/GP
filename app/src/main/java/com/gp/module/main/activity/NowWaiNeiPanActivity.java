@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import io.reactivex.FlowableEmitter;
 
 /**
@@ -37,11 +38,14 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
 
     @Override
     protected int getContentView() {
+        setAppRightTitle("刷新");
         return R.layout.nowwaineipan_act;
     }
 
     @Override
     protected void initView() {
+
+
         code = getIntent().getStringExtra(IntentParam.code);
         String name = getIntent().getStringExtra(IntentParam.name);
         setAppTitle(name.replace(" ","")+code);
@@ -79,17 +83,22 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
         List<Entry> waiNeiBi = new ArrayList<Entry>();
 
         for (int i = 0; i < list.size(); i++) {
-            waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
-            neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
             double bi;
             if(Integer.parseInt(list.get(i).nei_num)==0){
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), 1, 4);
+                waiNeiBi.add(new Entry(i, 0));
+
+                waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
+                neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
             }else{
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
                 Calendar calendar=Calendar.getInstance();
                 calendar.setTime(new Date(list.get(i).create_time));
                 if(calendar.get(Calendar.MINUTE)>=31){
                     waiNeiBi.add(new Entry(i, (float) bi));
+
+                    waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
+                    neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
                 }
             }
         }
@@ -133,8 +142,13 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
         chart.setData(lineData);
         chart.invalidate(); // refresh
     }
-    @Override
+    @OnClick({R.id.app_right_tv})
     protected void onViewClick(View v) {
-
+        switch (v.getId()){
+            case R.id.app_right_tv:
+                showLoading();
+                getData(1,false);
+            break;
+        }
     }
 }
