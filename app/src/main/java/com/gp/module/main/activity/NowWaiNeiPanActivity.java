@@ -79,7 +79,12 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
         for (int i = 0; i < list.size(); i++) {
             waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
             neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
-            double bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
+            double bi;
+            if(Integer.parseInt(list.get(i).nei_num)==0){
+                 bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), 1, 4);
+            }else{
+                 bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
+            }
             waiNeiBi.add(new Entry(i, (float) bi));
         }
         LineDataSet dataSet = new LineDataSet(waiPan, "外盘"); // add entries to dataset

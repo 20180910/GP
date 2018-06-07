@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.github.androidtools.SPUtils;
 import com.gp.tools.CopyFile;
 
 import org.junit.Test;
@@ -39,5 +40,14 @@ public class ExampleInstrumentedTest {
 
         int copy = CopyFile.copySdcardFile(pathDatabase, newPath);
         System.out.println("path=="+copy);
+    }
+    @Test
+    public void sdddf() throws Exception {
+        // Context of the app under test.
+        Context appContext = InstrumentationRegistry.getTargetContext();
+
+//        assertEquals("mygp.gp", appContext.getPackageName());
+
+        SPUtils.setPrefString(appContext, AppXml.isSaveTodayData, "");
     }
 }

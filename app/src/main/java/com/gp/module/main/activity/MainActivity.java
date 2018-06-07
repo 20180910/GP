@@ -8,14 +8,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.github.androidtools.DateUtils;
-import com.github.androidtools.SPUtils;
 import com.github.androidtools.inter.MyOnClickListener;
-import com.github.baseclass.permission.PermissionsManager;
-import com.github.baseclass.permission.PermissionsResultAction;
 import com.github.customview.MyRadioButton;
 import com.github.rxbus.RxBus;
-import com.gp.AppXml;
 import com.gp.Constant;
 import com.gp.R;
 import com.gp.base.BaseActivity;
@@ -234,56 +229,46 @@ public class MainActivity extends BaseActivity<HomeImp> {
 
     @Override
     protected void initData() {
-        PermissionsManager.getInstance().requestAllManifestPermissionsIfNecessary(mContext, new PermissionsResultAction() {
+        initDialog();
+        RXStart(new IOCallBack() {
             @Override
-            public void onGranted() {
-                initDialog();
-                RXStart(new IOCallBack() {
-                    @Override
-                    public void call(FlowableEmitter emitter) {
-                        if (isFirstIntoApp()) {//是否第一次进入app
-                            IOFirstIntoApp();
-                        } else {
-                            //收盘之后添加当天数据
-                            if (!isSaveShouPanData()) {//没有添加当天收盘数据
-                                if (isShouPan()) {//已经收盘收盘
-                                    IOShouPan();
-                                }/* else {
+            public void call(FlowableEmitter emitter) {
+                if (isFirstIntoApp()) {//是否第一次进入app
+                    IOFirstIntoApp();
+                } else {
+                    //收盘之后添加当天数据
+                    if (!isSaveShouPanData()) {//没有添加当天收盘数据
+                        if (isShouPan()) {//已经收盘收盘
+                            IOShouPan();
+                        }/* else {
                             //准备开盘
                             IOKaiPan();
                         }*/
-                            }/* else {
+                    }/* else {
                         //有添加当天收盘数据，已经收盘
                         IOOther();
                     }*/
-                        }
-                        emitter.onComplete();
-                    }
+                }
+                emitter.onComplete();
+            }
 
-                    @Override
-                    public void onMyNext(Object obj) {
-                    }
-                    @Override
-                    public void onMyCompleted() {
-                        super.onMyCompleted();
-                        startTimer();
-                        setNoFirstIntoApp();
-                        setSaveShouPanData();
-                        dialogDismiss();
-                        addHomeFragment();
-                    }
-                    @Override
-                    public void onMyError(Throwable e) {
-                        super.onMyError(e);
-                        dialogDismiss();
-                        showMsg("操作失败");
-                        addHomeFragment();
-                    }
-                });
+            @Override
+            public void onMyNext(Object obj) {
             }
             @Override
-            public void onDenied(String s) {
-                finish();
+            public void onMyCompleted() {
+                super.onMyCompleted();
+                startTimer();
+                setNoFirstIntoApp();
+                dialogDismiss();
+                addHomeFragment();
+            }
+            @Override
+            public void onMyError(Throwable e) {
+                super.onMyError(e);
+                dialogDismiss();
+                showMsg("操作失败");
+                addHomeFragment();
             }
         });
     }
@@ -303,28 +288,9 @@ public class MainActivity extends BaseActivity<HomeImp> {
             addShouPanData(gpBean,list.get(i).type);
             RxBus.getInstance().post(new ProgressEvent(i+1,count));
         }
+        setSaveShouPanData();
     }
 
-    private void addEveryData() {
-        int hour = CalendarUtil.get(Calendar.HOUR_OF_DAY);
-        int minute = CalendarUtil.get(Calendar.MINUTE);
-        String isSaveTodayData = SPUtils.getString(mContext, AppXml.isSaveTodayData, "");
-        String dateToString = DateUtils.dateToString(new Date());
-        if (!dateToString.equals(isSaveTodayData)) {
-            if (hour > 15 || (hour == 15 && minute > 2)) {
-                addTodayData();
-            } else {
-                dialogDismiss();
-                addHomeFragment();
-                startTimer();
-            }
-        } else {
-            dialogDismiss();
-            addHomeFragment();
-            startTimer();
-        }
-//        addTodayData();
-    }
 
     public void dialogDismiss() {
         if (myDialog != null) {
@@ -384,8 +350,6 @@ public class MainActivity extends BaseActivity<HomeImp> {
             public void onMyCompleted() {
                 super.onMyCompleted();
                 myDialog.dismiss();
-                String dateToString = DateUtils.dateToString(new Date());
-                SPUtils.setPrefString(mContext, AppXml.isSaveTodayData, dateToString);
                 addHomeFragment();
             }
 
