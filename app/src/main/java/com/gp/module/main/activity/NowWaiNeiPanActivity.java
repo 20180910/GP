@@ -18,6 +18,8 @@ import com.gp.module.main.bean.GpBean;
 import com.gp.module.main.dao.HomeImp;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -84,8 +86,12 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), 1, 4);
             }else{
                  bi = AndroidUtils.chuFa(Integer.parseInt(list.get(i).wai_num), Integer.parseInt(list.get(i).nei_num), 4);
+                Calendar calendar=Calendar.getInstance();
+                calendar.setTime(new Date(list.get(i).create_time));
+                if(calendar.get(Calendar.MINUTE)>=30){
+                    waiNeiBi.add(new Entry(i, (float) bi));
+                }
             }
-            waiNeiBi.add(new Entry(i, (float) bi));
         }
         LineDataSet dataSet = new LineDataSet(waiPan, "外盘"); // add entries to dataset
         dataSet.setColor(Color.RED);
