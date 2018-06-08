@@ -101,6 +101,9 @@ public class NowWaiNeiPanActivity extends BaseActivity<HomeImp> {
 
                     waiPan.add(new Entry(i,Float.parseFloat(list.get(i).wai_num)));
                     neiPan.add(new Entry(i,Float.parseFloat(list.get(i).nei_num)));
+                }else{
+                    waiPan.add(new Entry(i,0));
+                    neiPan.add(new Entry(i,0));
                 }
             }
         }
