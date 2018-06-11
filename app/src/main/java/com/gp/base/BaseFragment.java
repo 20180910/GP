@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
@@ -245,7 +246,7 @@ public abstract class BaseFragment<I extends BaseDaoImp> extends MyBaseFragment 
     protected void initDialog(){
         final MyDialog.Builder mDialog = new MyDialog.Builder(mContext);
         mDialog.setTitle("添加数据进度");
-        View view = getLayoutInflater().inflate(R.layout.adddata_popu, null);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.adddata_popu, null);
         tv_adddata_progress = view.findViewById(R.id.tv_adddata_progress);
         tv_updatedata_progress = view.findViewById(R.id.tv_updatedata_progress);
         mDialog.setContentView(view);
